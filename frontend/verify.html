@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Verification System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="verify.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <img src="logo.png" alt="Logo" class="logo-img">
+            
+            <!-- Menu Icon -->
+            <i class="fas fa-bars menu-icon" id="menuToggle"></i>
+    
+            <div class="nav-links" id="navLinks">
+                <a class="nav-btn" href = "home.html"><i class="fas fa-home"></i> Home</a>
+                <a class="nav-btn" href = "verify.html"><i class="fas fa-check-circle"></i> Verify</a>
+                <a class="nav-btn" href = "about.html"><i class="fas fa-info-circle"></i> About Us</a>
+                <a class="nav-btn" href = "contact.html"><i class="fas fa-envelope"></i> Contact Us</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Secure Document Verification</h1>
+        <p>Verify any document instantly with our AI-powered platform</p>
+    </section>
+    
+    <!-- Verification Section -->
+    <div class="verification-container">
+        <!-- Steps Section -->
+        <div class="steps">
+            <div class="step active" id="step1">
+                <div class="step-header">
+                    <i class="fas fa-upload step-icon"></i>
+                    <h3>Upload Document</h3>
+                </div>
+                <p>Drag & drop or select your document</p>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-header">
+                    <i class="fas fa-sync-alt step-icon"></i>
+                    <h3>Verification</h3>
+                </div>
+                <p>AI-powered document analysis</p>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-header">
+                    <i class="fas fa-check-circle step-icon"></i>
+                    <h3>Results</h3>
+                </div>
+                <p>View detailed verification report</p>
+            </div>
+        </div>   
+        <!-- Upload Area -->
+        <div class="upload-area" id="uploadArea">
+            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+            <h3>Drag and drop your document here</h3>
+            <p>or</p> 
+            <button id="browseBtn">Browse Files
+                <input type="file" id="fileInput" hidden accept=".pdf,.jpg,.jpeg,.png">
+            </button>
+        </div>
+    
+        <!-- Progress Container -->
+        <div id="progressContainer" class="progress-container">
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            <p id="progressStatus" class="progress-status">Analyzing document...</p>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="feature-card">
+            <i class="fas fa-bolt feature-icon"></i>
+            <h3>Instant Verification</h3>
+            <p>Get results in seconds with our AI-powered system</p>
+            <div class="accuracy">
+                <span>Accuracy Rate</span>
+                <span class="accuracy-value">99.9%</span>
+            </div>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-shield-alt feature-icon"></i>
+            <h3>Fraud Detection</h3>
+            <p>Advanced tampering and forgery detection</p>
+            <div class="accuracy">
+                <span>Accuracy Rate</span>
+                <span class="accuracy-value">99.5%</span>
+            </div>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-lock feature-icon"></i>
+            <h3>Secure Processing</h3>
+            <p>End-to-end encrypted document handling</p>
+            <div class="accuracy">
+                <span>Security Rate</span>
+                <span class="accuracy-value">100%</span>
+            </div>
+        </div>
+    </section>
+
+    <script src="verify.js">
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+        document.getElementById('uploadArea').addEventListener('click', function() {
+            alert('File upload feature coming soon!');
+        });
+    </script>
+</body>
+</html>
