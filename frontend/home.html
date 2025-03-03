@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <img src="logo.png" alt="Logo" class="logo-img">
+            
+            <!-- Menu Icon -->
+            <i class="fas fa-bars menu-icon" id="menuToggle"></i>
+    
+            <div class="nav-links" id="navLinks">
+                <a class="nav-btn" href="home.html"><i class="fas fa-home"></i> Home</a>
+                <a class="nav-btn" href="verify.html"><i class="fas fa-check-circle"></i> Verify</a>
+                <a class="nav-btn" href="about.html"><i class="fas fa-info-circle"></i> About Us</a>
+                <a class="nav-btn" href="contact.html"><i class="fas fa-envelope"></i> Contact Us</a>
+            </div>
+        </div>
+    </nav>
+    
+    <main>
+        <section class="awareness">
+            <h2>Awareness on Document Originality</h2>
+            <p>
+                In today's digital age, document forgery has become a serious issue. It is crucial to ensure the authenticity of any document before relying on it for legal, financial, or academic purposes. Fake documents can lead to fraud, identity theft, and severe legal consequences. Our document verification system is designed to help individuals and organizations validate documents efficiently and securely.
+            </p>
+        </section>
+        
+        <section class="verification-steps">
+            <h2>How to Verify Your Document</h2>
+            <ol>
+                <li>Go to the <a href="verify.html">Verify</a> page.</li>
+                <li>Upload your document in the specified format (PDF, JPEG, PNG).</li>
+                <li>Click the "Verify" button to initiate the validation process.</li>
+                <li>Wait for the system to analyze and cross-check the document.</li>
+                <li>Receive verification results indicating whether your document is authentic or requires further review.</li>
+            </ol>
+        </section>
+    </main>
+    <script>
+        document.getElementById("menuToggle").addEventListener("click", function () {
+            document.getElementById("navLinks").classList.toggle("active");
+        });
+    </script>
+</body>
+</html>

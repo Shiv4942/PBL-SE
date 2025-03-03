@@ -1,0 +1,26 @@
+<!-- displayInfo.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Information</title>
+</head>
+<body>
+    <h1>Extracted Information</h1>
+    <pre id="extractedText"></pre>
+    <script>
+        const filename = "your_uploaded_file.pdf"; // Replace with the actual filename
+        fetch(`/users/extract-text/${filename}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById("extractedText").innerText = data.text;
+                } else {
+                    console.error(data.message);
+                }
+            })
+            .catch(error => console.error("Error fetching text:", error));
+    </script>
+</body>
+</html>

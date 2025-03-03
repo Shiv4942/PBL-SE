@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="about.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="nav">
+        <div class="nav-container">
+            <img src="logo.png" alt="Logo" class="logo-img">
+            
+            <!-- Menu Icon -->
+            <i class="fas fa-bars menu-icon" id="menuToggle"></i>
+    
+            <div class="nav-links" id="navLinks">
+                <a class="nav-btn" href="home.html"><i class="fas fa-home"></i> Home</a>
+                <a class="nav-btn" href="verify.html"><i class="fas fa-check-circle"></i> Verify</a>
+                <a class="nav-btn active" href="about.html"><i class="fas fa-info-circle"></i> About Us</a>
+                <a class="nav-btn" href="contact.html"><i class="fas fa-envelope"></i> Contact Us</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- About Us Section -->
+    <section class="about-us">
+        <h1>Meet Our Team</h1>
+        <p>We are a passionate team dedicated to delivering excellence.</p>
+
+        <div class="team-container">
+            <!-- Team Member 1 -->
+            <div class="team-card">
+                <img src="member1.jpg" alt="Suyash Dive">
+                <h3>Suyash Dive</h3>
+                <p>Frontend Developer</p>
+                <p>Expert in creating engaging UI/UX designs with React and TailwindCSS.</p>
+            </div>
+
+            <!-- Team Member 2 -->
+            <div class="team-card">
+                <img src="member2.jpg" alt="Shivendra Gaikwad">
+                <h3>Shivendra Gaikwad</h3>
+                <p>Backend Developer</p>
+                <p>Specialist in Node.js, Express, and database management.</p>
+            </div>
+
+            <!-- Team Member 3 -->
+            <div class="team-card">
+                <img src="member3.jpg" alt="Kaivalya Deshpande">
+                <h3>Kaivalya Deshpande</h3>
+                <p>Project Manager</p>
+                <p>Ensures smooth project execution and team collaboration.</p>
+            </div>
+
+            <!-- Team Member 4 -->
+            <div class="team-card">
+                <img src="member4.jpg" alt="Indrajeet Dodmise">
+                <h3>Indrajeet Dodmise</h3>
+                <p>UI/UX Designer</p>
+                <p>Creates stunning designs and user-friendly experiences.</p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Toggle Mobile Menu
+        document.getElementById("menuToggle").addEventListener("click", function () {
+            document.getElementById("navLinks").classList.toggle("active");
+        });
+    </script>
+
+</body>
+</html>

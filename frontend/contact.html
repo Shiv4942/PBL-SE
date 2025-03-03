@@ -38,9 +38,31 @@
                 <br>abc@gmail.com</h3>
             </div>
         </div>
-        <div class="message"></div>
+        <div class="message">
+            <h2>Let's Talk</h2>
+            <h4>Feel free to drop a message below</h4>
+            
+            <form action="submit">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required>
+                
+                <label for="contact">Contact Info</label>
+                <input type="text" id="contact" name="contact" placeholder="Enter your phone or email" required>
+        
+                <label for="message">Your Message</label>
+                <textarea id="message" name="message" placeholder="Type your message here" required></textarea>
+        
+                <button type="submit">Send Message</button>
+            </form>
+        </div>
+        
     </main>
 
-    <script src="contact.js"></script>
+    <script>
+        // Toggle Mobile Menu
+        document.getElementById("menuToggle").addEventListener("click", function () {
+            document.getElementById("navLinks").classList.toggle("active");
+        });
+    </script>
 </body>
 </html>

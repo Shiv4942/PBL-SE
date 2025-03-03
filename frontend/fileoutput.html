@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extracted Text Viewer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="fileoutput.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <img src="logo.png" alt="Logo" class="logo-img">
+            
+            <!-- Menu Icon -->
+            <i class="fas fa-bars menu-icon" id="menuToggle"></i>
+    
+            <div class="nav-links" id="navLinks">
+                <a class="nav-btn" href="home.html"><i class="fas fa-home"></i> Home</a>
+                <a class="nav-btn" href="verify.html"><i class="fas fa-check-circle"></i> Verify</a>
+                <a class="nav-btn" href="about.html"><i class="fas fa-info-circle"></i> About Us</a>
+                <a class="nav-btn" href="contact.html"><i class="fas fa-envelope"></i> Contact Us</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>Extracted Text</h2>
+        <label for="filename">Enter Filename:</label>
+        <input type="text" id="filename" placeholder="example.pdf">
+        <button onclick="fetchExtractedText()">Extract Text</button>
+
+        <div id="result" class="result-container">
+            <h3>File: <span id="file-name"></span></h3>
+            <p><strong>Word Count:</strong> <span id="word-count"></span></p>
+            <pre id="extracted-text"></pre>
+        </div>
+    </div>
+
+    <script src="fileoutput.js"></script>
+</body>
+</html>
