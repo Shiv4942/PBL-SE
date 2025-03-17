@@ -43,16 +43,29 @@ const extractTextFromScannedPDF = async (filePath, lang = "eng+mar") => {
         for (const file of files) {
             const imagePath = path.join(path.dirname(filePath), file);
 
-            // Preprocess the image before OCR
-            const processedImagePath = await preprocessImage(imagePath);
+            try {
+                // Preprocess the image before OCR
+                const processedImagePath = await preprocessImage(imagePath);
 
-            // Use OCR for Marathi + English
-            const { data: { text } } = await Tesseract.recognize(processedImagePath, lang, {
-                logger: m => console.log(m), // Log OCR progress
-            });
+                // Use OCR for Marathi + English
+                const { data: { text } } = await Tesseract.recognize(processedImagePath, lang, {
+                    logger: m => console.log(m), // Log OCR progress
+                });
 
-            extractedText += text + "\n";
-            fs.unlinkSync(processedImagePath); // Delete processed image
+                extractedText += text + "\n";
+                
+                // Safely delete processed image
+                try {
+                    if (fs.existsSync(processedImagePath)) {
+                        fs.unlinkSync(processedImagePath);
+                    }
+                } catch (unlinkError) {
+                    console.warn(`Warning: Could not delete temporary file ${processedImagePath}:`, unlinkError.message);
+                }
+            } catch (imageError) {
+                console.error(`Error processing image ${imagePath}:`, imageError);
+                // Continue with next image even if one fails
+            }
         }
 
         return extractedText.trim() || "No text extracted via OCR.";
@@ -64,13 +77,24 @@ const extractTextFromScannedPDF = async (filePath, lang = "eng+mar") => {
 // Extract text from image files (JPG, PNG)
 const extractTextFromImage = async (filePath, lang = "eng+mar") => {
     try {
-         //Preprocess the image before OCR
+        // Preprocess the image before OCR
         const processedImagePath = await preprocessImage(filePath);
 
-        const { data: { text } } = await Tesseract.recognize(processedImagePath, lang);
+        // Use OCR for Marathi + English
+        const { data: { text } } = await Tesseract.recognize(processedImagePath, lang, {
+            logger: m => console.log(m), // Log OCR progress
+        });
 
-        fs.unlinkSync(processedImagePath); // Delete temporary processed image
-        return text.trim();
+        // Safely delete processed image
+        try {
+            if (fs.existsSync(processedImagePath)) {
+                fs.unlinkSync(processedImagePath);
+            }
+        } catch (unlinkError) {
+            console.warn(`Warning: Could not delete temporary file ${processedImagePath}:`, unlinkError.message);
+        }
+        
+        return text.trim() || "No text extracted.";
     } catch (error) {
         throw new Error("Image Text Extraction Failed: " + error.message);
     }
@@ -78,9 +102,25 @@ const extractTextFromImage = async (filePath, lang = "eng+mar") => {
 
 // Image Preprocessing Function (Sharp)
 const preprocessImage = async (filePath) => {
-    const processedPath = filePath.replace(/\.(jpg|jpeg|png)$/, "_processed.png");
+    // Fix the path handling by using path.parse
+    const parsedPath = path.parse(filePath);
+    const processedPath = path.join(
+        parsedPath.dir,
+        `${parsedPath.name}_processed.png`
+    );
 
     try {
+        // Check if the source file exists
+        if (!fs.existsSync(filePath)) {
+            throw new Error(`Source file not found: ${filePath}`);
+        }
+        
+        // Ensure we can write to the destination
+        const destinationDir = path.dirname(processedPath);
+        if (!fs.existsSync(destinationDir)) {
+            fs.mkdirSync(destinationDir, { recursive: true });
+        }
+
         await sharp(filePath)
             .grayscale()        // Convert to grayscale
             .threshold(140)     // Binarization (converts to black & white)
@@ -88,21 +128,43 @@ const preprocessImage = async (filePath) => {
             .resize(2000, null) // Resize for better OCR accuracy
             .toFile(processedPath);
 
+        // Verify the processed file was created
+        if (!fs.existsSync(processedPath)) {
+            throw new Error(`Failed to create processed image at ${processedPath}`);
+        }
+
         return processedPath;
     } catch (error) {
-        throw new Error("Image Preprocessing Failed: " + error.message);
+        console.error("Image Preprocessing Error:", error);
+        // If processing fails, copy the original file as a fallback
+        try {
+            fs.copyFileSync(filePath, processedPath);
+            return processedPath;
+        } catch (copyError) {
+            throw new Error(`Image Preprocessing Failed and fallback copy failed: ${error.message}, Copy error: ${copyError.message}`);
+        }
     }
 };
 
 // Determine file type and extract text
 const extractTextFromFile = async (filePath, lang = "eng+mar") => {
-    const ext = path.extname(filePath).toLowerCase();
-    if (ext === ".pdf") {
-        return await extractTextFromPDF(filePath, lang);
-    } else if ([".jpg", ".jpeg", ".png"].includes(ext)) {
-        return await extractTextFromImage(filePath, lang);
-    } else {
-        throw new Error("Unsupported file type");
+    try {
+        // Validate file existence first
+        if (!fs.existsSync(filePath)) {
+            throw new Error(`File not found: ${filePath}`);
+        }
+        
+        const ext = path.extname(filePath).toLowerCase();
+        if (ext === ".pdf") {
+            return await extractTextFromPDF(filePath, lang);
+        } else if ([".jpg", ".jpeg", ".png"].includes(ext)) {
+            return await extractTextFromImage(filePath, lang);
+        } else {
+            throw new Error(`Unsupported file type: ${ext}`);
+        }
+    } catch (error) {
+        console.error("Text Extraction Error:", error);
+        throw new Error(`Text Extraction Failed: ${error.message}`);
     }
 };
 

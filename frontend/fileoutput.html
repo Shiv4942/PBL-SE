@@ -3,39 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Extracted Text Viewer</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="fileoutput.css">
+    <title>Fraud Detection Results</title>
+    <style>
+        .fraud-detection-container {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: auto;
+            background-color: #f9f9f9;
+        }
+        .fraud-status {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .fraud-detected {
+            background-color: #ffcccc;
+            color: red;
+        }
+        .document-valid {
+            background-color: #ccffcc;
+            color: green;
+        }
+        .fraud-types, .recommendations, .fraud-info-box {
+            margin-top: 15px;
+        }
+        .fraud-info-box {
+            background-color: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .technical-details {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            overflow: auto;
+            font-size: 12px;
+        }
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <nav class="nav">
-        <div class="nav-container">
-            <img src="logo.png" alt="Logo" class="logo-img">
-            
-            <!-- Menu Icon -->
-            <i class="fas fa-bars menu-icon" id="menuToggle"></i>
-    
-            <div class="nav-links" id="navLinks">
-                <a class="nav-btn" href="home.html"><i class="fas fa-home"></i> Home</a>
-                <a class="nav-btn" href="verify.html"><i class="fas fa-check-circle"></i> Verify</a>
-                <a class="nav-btn" href="about.html"><i class="fas fa-info-circle"></i> About Us</a>
-                <a class="nav-btn" href="contact.html"><i class="fas fa-envelope"></i> Contact Us</a>
-            </div>
-        </div>
-    </nav>
-    <div class="container">
-        <h2>Extracted Text</h2>
-        <label for="filename">Enter Filename:</label>
-        <input type="text" id="filename" placeholder="example.pdf">
-        <button onclick="fetchExtractedText()">Extract Text</button>
 
-        <div id="result" class="result-container">
-            <h3>File: <span id="file-name"></span></h3>
-            <p><strong>Word Count:</strong> <span id="word-count"></span></p>
-            <pre id="extracted-text"></pre>
+    <div class="fraud-detection-container">
+        <!-- Fraud Status -->
+        <h3 class="fraud-status fraud-detected">
+            ⚠️ Potential Fraud Detected
+        </h3>
+
+        <!-- Fraud Types -->
+        <div class="fraud-types">
+            <h4>Suspicious Activity Types:</h4>
+            <ul>
+                <li>Fake 7/12 Document <span class="confidence">(Confidence: 90%)</span></li>
+                <li>Unauthorized Land Transfer <span class="confidence">(Confidence: 85%)</span></li>
+            </ul>
         </div>
+
+        <!-- Recommended Actions -->
+        <div class="recommendations">
+            <h4>Recommended Actions:</h4>
+            <ul>
+                <li>Report to local Tehsil Office</li>
+                <li>Verify document authenticity online</li>
+            </ul>
+        </div>
+
+        <!-- Verification Instructions -->
+        <div class="fraud-info-box">
+            <h4>How to Verify This Document:</h4>
+            <ul>
+                <li>Contact your local Tehsil Office or Land Records Department</li>
+                <li>Provide the survey number: <strong>12345</strong></li>
+                <li>Check the Mutation Register (8-A Register) for ownership history</li>
+                <li>Verify document on official website (e.g., Maharashtra Bhulekh)</li>
+            </ul>
+        </div>
+
+        <!-- Technical Details Accordion -->
+        <details class="fraud-details-accordion">
+            <summary>Technical Details (Advanced)</summary>
+            <div class="technical-details">
+                <pre>
+{
+    "fakeDocument": { "confidence": 0.90, "notes": "Mismatch in document records" },
+    "unauthorizedTransfer": { "confidence": 0.85, "notes": "Recent transfer without legal notice" }
+}
+                </pre>
+            </div>
+        </details>
     </div>
 
-    <script src="fileoutput.js"></script>
 </body>
 </html>
