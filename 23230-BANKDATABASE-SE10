@@ -1,0 +1,205 @@
+PROBLEM STATEMENT - CREATE A BANK DATABASE THAT MANAGES BRANCHES AND CUSTOMERS OF BANK . CUSTOMERS CAN TAKE LOAN AND OPEN ACCOUNTS .
+
+mysql> CREATE DATABASE BANK;
+Query OK, 1 row affected (0.21 sec)
+
+mysql> SHOW DATABASES;
++-------------------------+
+| Database                |
++-------------------------+
+| 23107A                  |
+| BANK                    |
+| Employe                 |
+| Grocery_Store           |
+| HOSTEL                  |
+| HOSTELS                 |
+| Hospital                |
+| Movie                   |
+| Order_Management_System |
+| STUD                    |
+| UserLogs                |
+| chef_restaurant         |
+| et                      |
+| info                    |
+| information_schema      |
+| it                      |
+| movie                   |
+| mydb                    |
+| mysql                   |
+| performance_schema      |
+| que1                    |
+| sys                     |
++-------------------------+
+22 rows in set (0.04 sec)
+
+mysql> USE BANK;
+Database changed
+mysql> CREATE TABLE Branch(
+    -> B_No INT PRIMARY KEY,
+    -> B_name VARCHAR(350) NOT NULL,
+    -> B_city VARCHAR(250),
+    -> Asset DECIMAL(10 , 2)
+    -> );
+Query OK, 0 rows affected (1.27 sec)
+
+mysql> CREATE TABLE Customer(
+    -> C_No INT PRIMARY KEY,
+    -> C_Name VARCHAR(250),
+    -> C_citystreet VARCHAR(450)
+    -> );
+Query OK, 0 rows affected (0.82 sec)
+
+mysql> CREATE TABLE Loan(
+    -> Loan_No INT PRIMARY KEY,
+    -> B_Name VARCHAR(350),
+    -> Amount DECIMAL(10, 2)
+    -> );
+Query OK, 0 rows affected (0.78 sec)
+
+mysql> CREATE TABLE Account(
+    -> Acc_No INT PRIMARY KEY,
+    -> B_Name VARCHAR(350),
+    -> Balance DECIMAL(10,2)
+    -> );
+Query OK, 0 rows affected (1.43 sec)
+
+mysql> CREATE TABLE Borrower(
+    -> C_No INT,
+    -> Loan_No INT,
+    -> FOREIGN KEY(C_NO) REFERENCES Customer(C)
+    -> ^C
+mysql> CREATE TABLE Borrower(
+    -> C_No INT,
+    -> Loan_No INT,
+    -> FOREIGN KEY(C_NO) REFERENCES Customer(C_No),
+    -> FOREIGN KEY(Acc_No) REFERENCES Account(Acc_No)
+    -> );
+ERROR 1072 (42000): Key column 'Acc_No' doesn't exist in table
+mysql> CREATE TABLE Borrower( C_No INT, Loan_No INT, FOREIGN KEY(C_NO) REFERENCES Customer(C_No), FOREIGN KEY(Acc_No) REFERENCES Loan(Loan_No) );
+ERROR 1072 (42000): Key column 'Acc_No' doesn't exist in table
+mysql> CREATE TABLE Borrower( C_No INT, Loan_No INT, FOREIGN KEY(C_NO) REFERENCES Customer(C_No), FOREIGN KEY(Loan_No) REFERENCES Loan(Loan_No) );
+Query OK, 0 rows affected (1.90 sec)
+
+mysql> CREATE TABLE Depositor(
+    -> C_No INT,
+    -> Acc_No INT,
+    -> FOREIGN KEY(C_No) REFERENCES Customer(C_No),
+    -> FOREIGN KEY(Acc_No) REFRENCES Account(Acc_No)
+    -> );
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'REFRENCES Account(Acc_No)
+)' at line 5
+mysql> CREATE TABLE Depositor( C_No INT, Acc_No INT, FOREIGN KEY(C_No) REFERENCES Customer(C_No), FOREIGN KEY(Acc_No) REFERENCES Account(Acc_No) );
+Query OK, 0 rows affected (1.76 sec)
+
+mysql> ALTER TABLE Loan ADD C_No INT;
+Query OK, 0 rows affected (1.75 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE Loan ADD FOREIGN KEY(C_No) REFERENCES Customer(C_NO);
+Query OK, 0 rows affected (2.68 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Customer(C_No , C_Name , C_citystreet)
+    -> VALUES(1 , 'shivendra' , 'shardanagar'),
+    -> (2 , 'indrajeet' , 'railwayline'),
+    -> (3 , 'prajwal' , 'patas'),
+    -> (4 , 'dhruv' , 'kolhapurstreet');
+Query OK, 4 rows affected (0.16 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Branch(B_No , B_name , B_city , asset) VALUES(1 , 'BSBI', 'BARAMATI' , 250000.00);
+Query OK, 1 row affected (0.13 sec)
+
+mysql> INSERT INTO Branch(B_No , B_name , B_city , asset) VALUES(2 , 'PSBI', 'PUNE' ,750000.00);
+Query OK, 1 row affected (0.10 sec)
+
+mysql> DESC Loan;
++---------+---------------+------+-----+---------+-------+
+| Field   | Type          | Null | Key | Default | Extra |
++---------+---------------+------+-----+---------+-------+
+| Loan_No | int           | NO   | PRI | NULL    |       |
+| B_Name  | varchar(350)  | YES  |     | NULL    |       |
+| Amount  | decimal(10,2) | YES  |     | NULL    |       |
+| C_No    | int           | YES  | MUL | NULL    |       |
++---------+---------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> INSERT INTO Loan(Loan_No , B_Name , Amount , C_No) VALUES(1 , 'PSBI' , 7500.00 , 2);
+Query OK, 1 row affected (0.11 sec)
+
+mysql> INSERT INTO Loan(Loan_No , B_Name , Amount , C_No) VALUES(2 , 'BSBI' , 4500.00 , 3);
+Query OK, 1 row affected (0.11 sec)
+
+mysql> show tables;
++----------------+
+| Tables_in_BANK |
++----------------+
+| Account        |
+| Borrower       |
+| Branch         |
+| Customer       |
+| Depositor      |
+| Loan           |
++----------------+
+6 rows in set (0.00 sec)
+
+QUERY1-FIND NAMES AND ADDRESS OF CUSTOMERS WHO HAVE A LOAN.
+mysql> SELECT C_Name , C_citystreet  FROM Customer , Loan WHERE Loan.C_No = Customer.C_No;
++-----------+--------------+
+| C_Name    | C_citystreet |
++-----------+--------------+
+| indrajeet | railwayline  |
+| prajwal   | patas        |
++-----------+--------------+
+2 rows in set (0.00 sec)
+
+QUERY2 - FIND LOAN DATA , ORDERED BY DECREASING AMOUNTS THEN INCREASING LOAN NUMBERS.
+mysql> SELECT Loan_No, B_Name, Amount, C_No
+    -> FROM Loan
+    -> ORDER BY Amount DESC, Loan_No ASC;
++---------+--------+---------+------+
+| Loan_No | B_Name | Amount  | C_No |
++---------+--------+---------+------+
+|       1 | PSBI   | 7500.00 |    2 |
+|       2 | BSBI   | 4500.00 |    3 |
++---------+--------+---------+------+
+2 rows in set (0.00 sec)
+
+QUERY3 - FIND PAIRS OF NAMES OF DIFFERENT CUSTOMERS WHO LIVE AT SAME ADDRESS BUT HAVE ACCOUNTS AT DIFFERENT BRANCHES
+mysql> SELECT C1.C_Name, C1.C_citystreet, A1.B_Name AS Branch_1, A2.B_Name AS Branch_2
+    -> FROM Customer C1
+    -> JOIN Depositor D1 ON C1.C_No = D1.C_No
+    -> JOIN Account A1 ON D1.Acc_No = A1.Acc_No
+    -> JOIN Depositor D2 ON C1.C_No = D2.C_No
+    -> JOIN Account A2 ON D2.Acc_No = A2.Acc_No
+    -> WHERE A1.B_Name != A2.B_Name
+    -> GROUP BY C1.C_No, A1.B_Name, A2.B_Name;
+Empty set (0.01 sec)
+
+QUERY4 - WRITE FUNCTION TO CALCULATE TOTAL ACCOUNT BALANCE AND LOAN AMOUNT FOR A PARTICULAR BRANCH.
+mysql> SELECT Amount, Balance 
+    -> FROM Loan, Account 
+    -> WHERE Loan.B_Name = 'PSBI' OR Account.B_Name = 'PSBI';
++----------+---------+
+| Amount   | Balance |
++----------+---------+
+|  3000.00 | 5000.00 |
+|  5000.00 | 5000.00 |
+| 10000.00 | 5000.00 |
+|  4500.00 | 5000.00 |
+|  7500.00 | 5000.00 |
+| 10000.00 | 7000.00 |
+|  7500.00 | 7000.00 |
+|  3000.00 | 1500.00 |
+|  5000.00 | 1500.00 |
+| 10000.00 | 1500.00 |
+|  4500.00 | 1500.00 |
+|  7500.00 | 1500.00 |
+| 10000.00 | 2000.00 |
+|  7500.00 | 2000.00 |
+| 10000.00 | 3000.00 |
+|  7500.00 | 3000.00 |
++----------+---------+
+16 rows in set (0.00 sec)
+
+

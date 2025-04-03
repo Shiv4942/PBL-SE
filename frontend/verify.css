@@ -342,6 +342,42 @@ body {
     color: var(--primary);
 }
 
+/* Owner Name Container */
+.owner-name-container {
+    display: none;
+    margin: 20px auto;
+    padding: 20px;
+    text-align: center;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    max-width: 500px;
+}
+
+.owner-name-container h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.input-group {
+    margin: 15px 0;
+}
+
+.owner-input {
+    width: 80%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.owner-input:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
 /* Upload Area */
 .upload-area {
     border: 2px dashed var(--primary-dark);
@@ -363,21 +399,6 @@ body {
     font-size: 3rem;
     color: var(--gray);
     margin-bottom: 1rem;
-}
-
-/* Progress Bar */
-.progress-bar {
-    width: 100%;
-    height: 8px;
-    background: #ddd;
-    border-radius: 4px;
-    margin: 1rem 0;
-    overflow: hidden;
-}
-
-.progress {
-    width: 0%;
-    height: 100%;
     background: var(--accent);
     transition: width 0.3s ease;
 }
@@ -733,3 +754,63 @@ body {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
 }
+
+#verifyBtn {
+    background: var(--success);
+    color: var(--white);
+    border: none;
+    padding: 12px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.3s ease, transform 0.2s ease;
+    display: block;
+    width: 100%;
+    max-width: 250px;
+    margin: 20px auto;
+    text-align: center;
+}
+
+#verifyBtn:hover {
+    background: #237032;
+    transform: scale(1.05);
+}
+
+#verifyBtn:disabled {
+    background: #a5d6a7;
+    cursor: not-allowed;
+}
+
+/* View Result Button */
+#resultBtn {
+    display: block; /* Ensure it appears */
+    background-color: #0b5ed7; /* DARK Blue background */
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 20px auto; /* Center horizontally */
+    text-align: center;
+    width: fit-content;
+    transition: background-color 0.3s ease;
+}
+
+#resultBtn:hover {
+    background-color: #0b5ed7; /* Darker blue on hover */
+}
+
+#resultBtn:active {
+    background-color:#0b5ed7; /* Even darker blue on click */
+}
+
+/* Ensure it stays inside the container */
+.verification-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+

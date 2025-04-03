@@ -1,462 +1,289 @@
-// fraud-detection.js - A module for detecting fraud in 7/12 land documents
-
-const axios = require('axios');
 const crypto = require('crypto');
 const fs = require('fs');
-const path = require('path');
+const levenshtein = require('fast-levenshtein');   // For fuzzy matching
+const pool = require('../connection/database');
 
-// Configure this with appropriate API endpoints in production
-const API_CONFIG = {
-  landRecordsAPI: process.env.LAND_RECORDS_API || "https://api.example.gov.in/land-records",
-  tehsilOfficeAPI: process.env.TEHSIL_OFFICE_API || "https://api.example.gov.in/tehsil",
-  mutationRegisterAPI: process.env.MUTATION_API || "https://api.example.gov.in/mutation-register",
-  governmentLandAPI: process.env.GOVT_LAND_API || "https://api.example.gov.in/government-lands",
-  poaVerificationAPI: process.env.POA_API || "https://api.example.gov.in/poa-verification"
+// ✅ Function to calculate document hash for integrity verification
+const calculateDocumentHash = async (filePath) => {
+    try {
+        const hash = crypto.createHash('sha256');
+        const fileBuffer = await fs.promises.readFile(filePath);
+        hash.update(fileBuffer);
+        return hash.digest('hex');
+    } catch (error) {
+        console.error("Error calculating document hash:", error);
+        throw new Error("Failed to calculate document hash.");
+    }
 };
 
-// Database cache (in production, use a proper database)
-let documentCache = {};
-
-/**
- * Main function to detect fraud in 7/12 documents
- * @param {Object} extractedData - Data extracted from the document
- * @param {String} documentText - Full text extracted from the document
- * @param {String} filePath - Path to the original document file
- * @param {String} language - Language of the document ('en' or 'mr')
- * @returns {Object} Fraud detection results
- */
-async function detectFraud(extractedData, documentText, filePath, language = 'en') {
-  try {
-    // Calculate document hash for integrity check
-    const documentHash = await calculateDocumentHash(filePath);
-    
-    // Store results from all checks
-    const fraudChecks = {
-      isFraudulent: false,
-      fraudTypes: [],
-      warnings: [],
-      details: {},
-      recommendations: []
-    };
-    
-    // 1. Check for fake documents
-    const fakeDocumentCheck = await checkFakeDocument(extractedData, documentHash, language);
-    if (fakeDocumentCheck.isSuspicious) {
-      fraudChecks.fraudTypes.push("Fake 7/12 Document");
-      fraudChecks.isFraudulent = true;
-      fraudChecks.details.fakeDocument = fakeDocumentCheck;
-      fraudChecks.recommendations.push("Verify this document with the Tehsil Office");
-    }
-    
-    // 2. Check for tampering with ownership details
-    const ownershipTamperingCheck = await checkOwnershipTampering(extractedData, documentText, language);
-    if (ownershipTamperingCheck.isSuspicious) {
-      fraudChecks.fraudTypes.push("Ownership Details Tampering");
-      fraudChecks.isFraudulent = true;
-      fraudChecks.details.ownershipTampering = ownershipTamperingCheck;
-      fraudChecks.recommendations.push("Verify ownership with the Mutation Register (8-A Register)");
-    }
-    
-    // 3. Check for unauthorized land transfers
-    const unauthorizedTransferCheck = await checkUnauthorizedTransfers(extractedData, language);
-    if (unauthorizedTransferCheck.isSuspicious) {
-      fraudChecks.fraudTypes.push("Unauthorized Land Transfer");
-      fraudChecks.isFraudulent = true;
-      fraudChecks.details.unauthorizedTransfer = unauthorizedTransferCheck;
-      fraudChecks.recommendations.push("Check the Mutation Register for authorization details");
-    }
-    
-    // 4. Check for fake signatures and seals
-    const fakeSignatureCheck = await checkFakeSignaturesAndSeals(filePath);
-    if (fakeSignatureCheck.isSuspicious) {
-      fraudChecks.fraudTypes.push("Fake Signatures/Seals");
-      fraudChecks.isFraudulent = true;
-      fraudChecks.details.fakeSignatures = fakeSignatureCheck;
-      fraudChecks.recommendations.push("Verify document with issuing authority");
-    }
-    
-    // 5. Check for duplicate documents
-    const duplicateDocumentCheck = await checkDuplicateDocuments(extractedData, documentHash);
-    if (duplicateDocumentCheck.isSuspicious) {
-      fraudChecks.fraudTypes.push("Duplicate 7/12 Document");
-      fraudChecks.warnings.push("Possible duplicate document detected");
-      fraudChecks.details.duplicateDocument = duplicateDocumentCheck;
-      fraudChecks.recommendations.push("Verify document in the Land Records Database");
-    }
-    
-    // 6. Check for Power of Attorney misuse
-    const poaMisuseCheck = await checkPoAMisuse(extractedData, documentText);
-    if (poaMisuseCheck.isSuspicious) {
-      fraudChecks.fraudTypes.push("Power of Attorney Misuse");
-      fraudChecks.warnings.push("Potential Power of Attorney misuse");
-      fraudChecks.details.poaMisuse = poaMisuseCheck;
-      fraudChecks.recommendations.push("Verify Power of Attorney with the local registrar's office");
-    }
-    
-    // 7. Check for government land encroachment
-    const governmentLandCheck = await checkGovernmentLandEncroachment(extractedData);
-    if (governmentLandCheck.isSuspicious) {
-      fraudChecks.fraudTypes.push("Government Land Encroachment");
-      fraudChecks.isFraudulent = true;
-      fraudChecks.details.governmentLand = governmentLandCheck;
-      fraudChecks.recommendations.push("Cross-check with Revenue Map and Town Planning Records");
-    }
-    
-    // 8. Check for mutation fraud
-    const mutationFraudCheck = await checkMutationFraud(extractedData);
-    if (mutationFraudCheck.isSuspicious) {
-      fraudChecks.fraudTypes.push("Mutation Process Fraud");
-      fraudChecks.isFraudulent = true;
-      fraudChecks.details.mutationFraud = mutationFraudCheck;
-      fraudChecks.recommendations.push("Verify with the original sale deed and Mutation Register");
-    }
-    
-    // Additional warnings for documents with minimal issues
-    if (fraudChecks.fraudTypes.length === 0 && fraudChecks.warnings.length === 0) {
-      // Perform basic consistency checks
-      const consistencyIssues = checkDocumentConsistency(extractedData, documentText);
-      fraudChecks.warnings = consistencyIssues;
-      
-      if (consistencyIssues.length > 0) {
-        fraudChecks.recommendations.push("Minor inconsistencies found. Consider additional verification.");
-      }
-    }
-    
-    return fraudChecks;
-  } catch (error) {
-    console.error("Fraud detection error:", error);
-    return {
-      isFraudulent: false,
-      fraudTypes: [],
-      warnings: ["Fraud detection system encountered an error. Manual verification recommended."],
-      details: { error: error.message },
-      recommendations: ["Please verify this document manually with the concerned authorities."]
-    };
-  }
-}
-
-/**
- * Calculate a hash of the document for integrity checking
- */
-async function calculateDocumentHash(filePath) {
-  return new Promise((resolve, reject) => {
+// ✅ Function to fetch all survey numbers from the database
+const getAllSurveyNumbers = async () => {
+    let connection;
     try {
-      const fileBuffer = fs.readFileSync(filePath);
-      const hashSum = crypto.createHash('sha256');
-      hashSum.update(fileBuffer);
-      const hex = hashSum.digest('hex');
-      resolve(hex);
+        connection = await pool.getConnection();
+        const [rows] = await connection.execute(
+            `SELECT survey_number FROM land_records`
+        );
+        connection.release();
+        return rows.map(row => row.survey_number);
     } catch (error) {
-      reject(error);
+        console.error("Error fetching survey numbers:", error);
+        if (connection) connection.release();
+        return [];
     }
-  });
-}
+};
 
-/**
- * Check for fake 7/12 documents
- */
-async function checkFakeDocument(extractedData, documentHash, language) {
-  // Simulate API call to verify document with Tehsil Office
-  // In production, use actual API integration
-  try {
-    // In production, this would be a real API call
-    // const response = await axios.post(`${API_CONFIG.tehsilOfficeAPI}/verify-document`, {
-    //   surveyNumber: extractedData.surveyNumber,
-    //   villageCode: getVillageCode(extractedData.villageName),
-    //   talukaCode: getTalukaCode(extractedData.talukaName),
-    //   districtCode: getDistrictCode(extractedData.districtName),
-    //   documentHash: documentHash
-    // });
+// ✅ Function to normalize survey number format
+const normalizeSurveyNumber = (surveyNumber) => {
+    if (!surveyNumber) return '';
     
-    // Simulated validation logic
-    const suspicious = !isValidSurveyNumberFormat(extractedData.surveyNumber);
+    return surveyNumber
+        .toString()
+        // Convert Devanagari numerals to English
+        .replace(/[०-९]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0966 + 0x30))
+        // Remove all spaces
+        .replace(/\s+/g, '')
+        // Remove any characters that aren't numbers, forward slashes, or hyphens
+        .replace(/[^0-9\/\-]/g, '')
+        // Remove leading/trailing slashes
+        .replace(/^\/+|\/+$/g, '')
+        // Ensure consistent format for comparison (e.g., '123/5')
+        .replace(/\/{2,}/g, '/')
+        .replace(/\-+/g, '-');
+};
+
+// ✅ Function to find the closest valid survey number using fuzzy matching
+const findClosestSurveyNumber = async (extractedSurvey, allSurveys = []) => {
+    if (!extractedSurvey) return '';
     
-    return {
-      isSuspicious: suspicious,
-      reasons: suspicious ? ["Survey number format is invalid", "Document not found in official records"] : [],
-      confidence: suspicious ? 0.85 : 0.2
-    };
-  } catch (error) {
-    console.error("Error verifying document with Tehsil office:", error);
-    return {
-      isSuspicious: true,
-      reasons: ["Failed to verify with official records", "Document authentication failed"],
-      confidence: 0.7
-    };
-  }
-}
-
-/**
- * Check for tampering with ownership details
- */
-async function checkOwnershipTampering(extractedData, documentText, language) {
-  // In real implementation, check with mutation register and historical data
-  try {
-    // Look for typical signs of tampering in the text
-    const possibleTampering = checkForTextualAnomalies(documentText);
+    // Normalize the extracted survey number
+    const normalizedExtracted = normalizeSurveyNumber(extractedSurvey);
+    console.log('Normalized extracted survey number:', normalizedExtracted);
     
-    // Check for inconsistent ownership information
-    const ownerNameInconsistency = checkOwnerNameInconsistency(extractedData, documentText, language);
+    if (allSurveys.length === 0) {
+        allSurveys = await getAllSurveyNumbers();
+    }
+    console.log('All survey numbers from DB:', allSurveys);
     
-    return {
-      isSuspicious: possibleTampering || ownerNameInconsistency,
-      reasons: [
-        ...(possibleTampering ? ["Document text shows signs of modification"] : []),
-        ...(ownerNameInconsistency ? ["Owner name appears inconsistent within the document"] : [])
-      ],
-      confidence: (possibleTampering || ownerNameInconsistency) ? 0.75 : 0.15
-    };
-  } catch (error) {
-    console.error("Error checking ownership tampering:", error);
-    return {
-      isSuspicious: false,
-      reasons: ["Failed to validate ownership details"],
-      confidence: 0.5
-    };
-  }
-}
-
-/**
- * Check for unauthorized land transfers
- */
-async function checkUnauthorizedTransfers(extractedData, language) {
-  // This would check the mutation register in production
-  try {
-    // If landArea is unusually small or large, flag it
-    const areaValue = parseAreaValue(extractedData.landArea);
-    const isAreaSuspicious = areaValue && (areaValue < 0.1 || areaValue > 100);
-    
-    return {
-      isSuspicious: isAreaSuspicious,
-      reasons: isAreaSuspicious ? ["Land area is unusually small or large"] : [],
-      confidence: isAreaSuspicious ? 0.6 : 0.1
-    };
-  } catch (error) {
-    console.error("Error checking unauthorized transfers:", error);
-    return {
-      isSuspicious: false,
-      reasons: [],
-      confidence: 0.1
-    };
-  }
-}
-
-/**
- * Check for fake signatures and seals
- * In production, this would use image processing techniques
- */
-async function checkFakeSignaturesAndSeals(filePath) {
-  // This is a placeholder - in production, use computer vision to analyze signatures and seals
-  // For now, return a random result for demonstration
-  const randomSuspicion = Math.random() < 0.2; // 20% chance of flagging as suspicious
-  
-  return {
-    isSuspicious: randomSuspicion,
-    reasons: randomSuspicion ? ["Signature appears inconsistent with reference samples"] : [],
-    confidence: randomSuspicion ? 0.65 : 0.2
-  };
-}
-
-/**
- * Check for duplicate 7/12 documents
- */
-async function checkDuplicateDocuments(extractedData, documentHash) {
-  // In production, check against a database of known documents
-  const key = `${extractedData.surveyNumber}-${extractedData.villageName}-${extractedData.talukaName}`;
-  
-  const isDuplicate = documentCache[key] && documentCache[key] !== documentHash;
-  
-  // Store this document hash for future reference
-  if (!documentCache[key]) {
-    documentCache[key] = documentHash;
-  }
-  
-  return {
-    isSuspicious: isDuplicate,
-    reasons: isDuplicate ? ["Another document with the same survey number and location exists"] : [],
-    confidence: isDuplicate ? 0.9 : 0.1
-  };
-}
-
-/**
- * Check for Power of Attorney misuse
- */
-async function checkPoAMisuse(extractedData, documentText) {
-  // Check if the document mentions PoA 
-  const containsPoA = /power\s+of\s+attorney|पॉवर\s+ऑफ\s+अटॉर्नी|मुखत्यारपत्र/i.test(documentText);
-  
-  if (!containsPoA) {
-    return {
-      isSuspicious: false,
-      reasons: [],
-      confidence: 0.1
-    };
-  }
-  
-  // In production, validate the PoA with registrar's office
-  return {
-    isSuspicious: true,
-    reasons: ["Document involves Power of Attorney - requires additional verification"],
-    confidence: 0.6
-  };
-}
-
-/**
- * Check for government land encroachment
- */
-async function checkGovernmentLandEncroachment(extractedData) {
-  // In production, check against government land database
-  // For now, check if land type indicates potential government land
-  const landTypeLowercase = extractedData.landType ? extractedData.landType.toLowerCase() : '';
-  const suspiciousLandType = landTypeLowercase.includes('gov') || 
-                             landTypeLowercase.includes('reserved') ||
-                             landTypeLowercase.includes('forest') ||
-                             landTypeLowercase.includes('protected');
-  
-  return {
-    isSuspicious: suspiciousLandType,
-    reasons: suspiciousLandType ? ["Land type may indicate government ownership"] : [],
-    confidence: suspiciousLandType ? 0.7 : 0.2
-  };
-}
-
-/**
- * Check for fraud in mutation process
- */
-async function checkMutationFraud(extractedData) {
-  // In production, check with mutation register API
-  // For now, return a placeholder result
-  return {
-    isSuspicious: false,
-    reasons: [],
-    confidence: 0.1
-  };
-}
-
-/**
- * Helper function to check for textual anomalies that might indicate tampering
- */
-function checkForTextualAnomalies(text) {
-  // Look for signs of digital manipulation in text
-  const anomalyPatterns = [
-    /[^\s\n][A-Z]{5,}[^\s\n]/,  // Unexpected all-caps words (potential replacements)
-    /\d{2,}[A-Za-z]\d{2,}/,     // Numbers with inserted letters
-    /[\u0900-\u097F][\u0000-\u007F][\u0900-\u097F]/  // Devanagari script with inserted Latin characters
-  ];
-  
-  return anomalyPatterns.some(pattern => pattern.test(text));
-}
-
-/**
- * Helper function to check owner name consistency
- */
-function checkOwnerNameInconsistency(extractedData, documentText, language) {
-  if (!extractedData.ownerName) return false;
-  
-  const ownerName = extractedData.ownerName.trim();
-  
-  // Check if owner name appears multiple times with variations
-  const nameVariations = [];
-  
-  if (language === 'en') {
-    // For English documents
-    const nameMatches = documentText.match(new RegExp(`(Name|Owner|Holder)[^\\n]{1,50}(${escapeRegExp(ownerName)})[^\\n]{0,30}`, 'gi'));
-    if (nameMatches && nameMatches.length > 1) {
-      // Check if name variations exist
-      for (const match of nameMatches) {
-        const extractedNameMatch = match.match(new RegExp(`(Name|Owner|Holder)[^\\n]{1,50}([^\\n]{3,50})`, 'i'));
-        if (extractedNameMatch && extractedNameMatch[2]) {
-          nameVariations.push(extractedNameMatch[2].trim());
+    // First try exact match after normalization
+    for (const dbSurvey of allSurveys) {
+        const normalizedDb = normalizeSurveyNumber(dbSurvey);
+        console.log(`Comparing normalized: ${normalizedExtracted} with DB: ${normalizedDb}`);
+        
+        // Try exact match
+        if (normalizedExtracted === normalizedDb) {
+            console.log('Exact match found:', dbSurvey);
+            return dbSurvey;
         }
-      }
-    }
-  } else {
-    // For Marathi documents
-    const nameMatches = documentText.match(new RegExp(`(नाव|मालक|धारक)[^\\n]{1,50}(${escapeRegExp(ownerName)})[^\\n]{0,30}`, 'gi'));
-    if (nameMatches && nameMatches.length > 1) {
-      // Check if name variations exist
-      for (const match of nameMatches) {
-        const extractedNameMatch = match.match(new RegExp(`(नाव|मालक|धारक)[^\\n]{1,50}([^\\n]{3,50})`, 'i'));
-        if (extractedNameMatch && extractedNameMatch[2]) {
-          nameVariations.push(extractedNameMatch[2].trim());
+        
+        // Try without leading zeros
+        const noLeadingZeros = normalizedExtracted.replace(/^0+/, '');
+        if (noLeadingZeros === normalizedDb) {
+            console.log('Match found after removing leading zeros:', dbSurvey);
+            return dbSurvey;
         }
-      }
     }
-  }
-  
-  // If we have multiple name variations, check if they're inconsistent
-  if (nameVariations.length > 1) {
-    const uniqueNames = new Set(nameVariations);
-    return uniqueNames.size > 1;
-  }
-  
-  return false;
-}
+    
+    // If no exact match, try fuzzy matching
+    let closestMatch = extractedSurvey;
+    let minDistance = Infinity;
 
-/**
- * Helper function to check document consistency
- */
-function checkDocumentConsistency(extractedData, documentText) {
-  const warnings = [];
-  
-  // Check if all required fields exist
-  const requiredFields = ['surveyNumber', 'ownerName', 'landArea', 'villageName', 'talukaName', 'districtName'];
-  const missingFields = requiredFields.filter(field => !extractedData[field]);
-  
-  if (missingFields.length > 0) {
-    warnings.push(`Document is missing important fields: ${missingFields.join(', ')}`);
-  }
-  
-  // Check if the document mentions certain keywords but they aren't extracted
-  const keywordChecks = [
-    { keyword: /mortgage|loan|hypothecation|lien/i, field: 'encumbrances', message: "Document may have unextracted mortgage information" },
-    { keyword: /court|case|litigation|dispute/i, field: 'litigation', message: "Document may have unextracted legal dispute information" },
-    { keyword: /tax|revenue|arrears|dues/i, field: 'taxDues', message: "Document may have unextracted tax information" }
-  ];
-  
-  for (const check of keywordChecks) {
-    if (check.keyword.test(documentText) && !extractedData[check.field]) {
-      warnings.push(check.message);
+    for (const dbSurvey of allSurveys) {
+        const normalizedDb = normalizeSurveyNumber(dbSurvey);
+        const distance = levenshtein.get(normalizedExtracted, normalizedDb);
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestMatch = dbSurvey;
+        }
     }
-  }
-  
-  return warnings;
-}
 
-/**
- * Helper function to validate survey number format
- */
-function isValidSurveyNumberFormat(surveyNumber) {
-  if (!surveyNumber) return false;
-  
-  // Clean the survey number
-  const cleanedNumber = surveyNumber.trim().replace(/\s+/g, '');
-  
-  // Check if it's in valid format: digits, possibly with a slash
-  return /^\d+(?:\/\d+)?$/.test(cleanedNumber);
-}
+    console.log('Closest match:', closestMatch, 'with distance:', minDistance);
+    // Return closest match only if the difference is minor (distance ≤ 2)
+    return minDistance <= 2 ? closestMatch : extractedSurvey;
+};
 
-/**
- * Helper function to parse area value from text
- */
-function parseAreaValue(areaText) {
-  if (!areaText) return null;
-  
-  // Extract the numeric part (handle both Western and Devanagari digits)
-  const match = areaText.match(/[\d\u0966-\u096F]+\.?[\d\u0966-\u096F]*/);
-  if (!match) return null;
-  
-  // Convert string to number
-  let numericValue = match[0].replace(/[\u0966-\u096F]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0966 + 0x30));
-  return parseFloat(numericValue);
-}
+// ✅ Function to validate extracted data against the database
+const validateDocumentData = async (extractedData, ownerName = null) => {
+    let connection;
 
-/**
- * Helper function to escape special characters in regex
- */
-function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+    try {
+        connection = await pool.getConnection();
 
-// Export the main fraud detection function
+        // Get all survey numbers first
+        const allSurveyNumbers = await getAllSurveyNumbers();
+        console.log('All survey numbers from DB:', allSurveyNumbers);
+
+        if (!extractedData.surveyNumber) {
+            return {
+                isValid: false,
+                message: 'No survey number found in document',
+                details: { error: 'Missing survey number' }
+            };
+        }
+
+        // Normalize the extracted survey number
+        const normalizedExtracted = normalizeSurveyNumber(extractedData.surveyNumber);
+        console.log('Normalized extracted survey number:', normalizedExtracted);
+
+        // Try exact match first
+        let matchedSurveyNumber = null;
+        for (const dbNumber of allSurveyNumbers) {
+            const normalizedDb = normalizeSurveyNumber(dbNumber);
+            if (normalizedDb === normalizedExtracted) {
+                matchedSurveyNumber = dbNumber;
+                console.log('Found exact match:', matchedSurveyNumber);
+                break;
+            }
+        }
+
+        // If no exact match, try fuzzy matching
+        if (!matchedSurveyNumber) {
+            let minDistance = Infinity;
+            let closestMatch = null;
+
+            for (const dbNumber of allSurveyNumbers) {
+                const normalizedDb = normalizeSurveyNumber(dbNumber);
+                const distance = levenshtein.get(normalizedExtracted, normalizedDb);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestMatch = dbNumber;
+                }
+            }
+
+            // Only use fuzzy match if it's close enough
+            if (minDistance <= 2) {
+                matchedSurveyNumber = closestMatch;
+                console.log('Found fuzzy match:', matchedSurveyNumber, 'with distance:', minDistance);
+            }
+        }
+
+        // If no match found at all
+        if (!matchedSurveyNumber) {
+            return {
+                isValid: false,
+                message: 'Survey number not found in records',
+                details: {
+                    extractedNumber: extractedData.surveyNumber,
+                    normalizedNumber: normalizedExtracted
+                }
+            };
+        }
+
+        // Query for matching survey number
+        const [rows] = await connection.execute(
+            `SELECT * FROM land_records WHERE survey_number = ?`,
+            [matchedSurveyNumber]
+        );
+        console.log('Database query result rows:', rows.length);
+        console.log('Searching for survey number:', matchedSurveyNumber);
+
+        // Document is invalid if survey number not found
+        if (rows.length === 0) {
+            console.log('No matching survey number found in database');
+            return {
+                isValid: false,
+                message: 'Survey number not found in database',
+                details: {
+                    extractedNumber: extractedData.surveyNumber,
+                    matchedNumber: matchedSurveyNumber,
+                    normalizedNumber: normalizedExtracted
+                }
+            };
+        }
+
+        // Check owner name if provided
+        if (ownerName) {
+            const normalizedInput = ownerName.toLowerCase().trim();
+            const normalizedDb = rows[0].owner_name.toLowerCase().trim();
+            const normalizedExtracted = extractedData.ownerNames ? 
+                extractedData.ownerNames.toLowerCase().trim() : '';
+
+            console.log('Comparing owner names:', {
+                input: normalizedInput,
+                extracted: normalizedExtracted,
+                database: normalizedDb
+            });
+
+            if (normalizedInput !== normalizedDb) {
+                return {
+                    isValid: false,
+                    message: 'Owner name does not match database records',
+                    details: {
+                        surveyNumber: matchedSurveyNumber,
+                        ownerName: {
+                            input: ownerName,
+                            extracted: extractedData.ownerNames,
+                            database: rows[0].owner_name
+                        },
+                        landArea: extractedData.landAreas
+                    }
+                };
+            }
+        }
+
+        // Return success if all validations pass
+        return {
+            isValid: true,
+            message: 'Document verification successful',
+            details: {
+                surveyNumber: matchedSurveyNumber,
+                ownerName: {
+                    database: rows[0].owner_name,
+                    extracted: extractedData.ownerNames,
+                    input: ownerName || 'Not provided'
+                },
+                landArea: extractedData.landAreas
+            }
+        };
+
+    } catch (error) {
+        console.error("Validation error:", error);
+        return { isValid: false, invalidFields: ['Database error occurred'] };
+
+    } finally {
+        if (connection) connection.release();
+    }
+};
+
+// ✅ Main fraud detection function
+const detectFraud = async (extractedData, documentText, filePath, language = 'en', ownerName = null) => {
+    const fraudChecks = {
+        isFraudulent: false,
+        fraudTypes: [],
+        details: {},
+        recommendations: []
+    };
+
+    try {
+        // Validate the document data against the database with owner name
+        const validationResults = await validateDocumentData(extractedData, ownerName);
+        
+        // Set fraud status based on survey number validation only
+        if (!validationResults.isValid) {
+            fraudChecks.isFraudulent = true;
+            fraudChecks.fraudTypes.push("Invalid Survey Number");
+            fraudChecks.details = validationResults.details;
+            fraudChecks.message = validationResults.message || 'Survey number validation failed';
+        } else {
+            fraudChecks.message = validationResults.message;
+            fraudChecks.details = validationResults.details;
+        }
+
+        // Add basic recommendations
+        if (fraudChecks.isFraudulent) {
+            fraudChecks.recommendations.push("Verify survey number with land records.");
+        }
+
+    } catch (error) {
+        console.error("Error in fraud detection:", error);
+        fraudChecks.isFraudulent = true;
+        fraudChecks.fraudTypes.push("System Error");
+        fraudChecks.details.error = error.message;
+        fraudChecks.recommendations.push("Review system logs for errors.");
+    }
+
+    return fraudChecks;
+};
+
 module.exports = { detectFraud };

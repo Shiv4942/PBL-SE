@@ -5,42 +5,46 @@ const fs = require("fs");
 const db = require("../connection/database");
 const { extractTextFromFile } = require("../ImageProcessing/textextractor");
 const { detectFraud } = require('../utils/fraud-detection');
+
 const router = express.Router();
 const uploadDir = path.join(__dirname, "../uploads");
-const { exec } = require("child_process");
-// Ensure 'uploads' folder exists
+
+// ✅ Ensure 'uploads' folder exists
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Configure Multer Storage
+// ✅ Configure Multer Storage
 const storage = multer.diskStorage({
     destination: uploadDir,
     filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
+        cb(null, `${Date.now()}-${file.originalname}`);
     },
 });
 
 const upload = multer({ storage });
 
-// ✅ Upload File
+
+// ✅ Upload File Route
 router.post("/upload", upload.single("file"), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
     const { filename, mimetype, path: filePath } = req.file;
-    
+
     try {
-        await db.promise().query("INSERT INTO documents (name, type, path) VALUES (?, ?, ?)", [
-            filename, mimetype, filePath
-        ]);
+        await db.query(
+            "INSERT INTO documents (name, type, path) VALUES (?, ?, ?)",
+            [filename, mimetype, filePath]
+        );
         res.json({ success: true, message: "File uploaded successfully", file: filename });
     } catch (err) {
         console.error("Database Error:", err);
         res.status(500).json({ success: false, message: "Database error" });
     }
 });
+
 
 // ✅ List Uploaded Documents
 router.get("/documents", async (req, res) => {
@@ -53,9 +57,11 @@ router.get("/documents", async (req, res) => {
     }
 });
 
+
 // ✅ Serve Uploaded Files
 router.get("/uploads/:filename", (req, res) => {
     const filePath = path.join(uploadDir, req.params.filename);
+    
     if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
     } else {
@@ -63,8 +69,12 @@ router.get("/uploads/:filename", (req, res) => {
     }
 });
 
-// ✅ Extract Text and Validate Documents
+
+// ✅ Extract Text and Validate Documents with Fraud Detection
 router.get("/validate-document/:filename", async (req, res) => {
+    // Get owner name from query params
+    const ownerName = req.query.ownerName;
+    console.log('Received owner name:', ownerName);
     const filePath = path.join(uploadDir, decodeURIComponent(req.params.filename));
 
     try {
@@ -72,11 +82,11 @@ router.get("/validate-document/:filename", async (req, res) => {
             return res.status(404).json({ success: false, message: "File not found" });
         }
 
-        // Step 1: Extract Text
+        // ✅ Step 1: Extract Text
         const text = await extractTextFromFile(filePath);
-        console.log("Extracted Text:", text); // Debug: Log extracted text
+        console.log("Extracted Text:", text);
 
-        // Step 2: Define Validation Criteria for General Fee Receipt
+        // ✅ Step 2: Define Validation Patterns
         const feeReceiptValidations = {
             studentName: /Student Name:\s*([A-Z\s]+)/i,
             rollNumber: /Roll No[:\s]+(\d{4,6})/i,
@@ -86,77 +96,106 @@ router.get("/validate-document/:filename", async (req, res) => {
             amount: /Total Fee[\s\S]*?(\d{1,},?\d{2,}\.\d{2})/i
         };
 
-        // Step 3: Define Validation Criteria for 7/12 Land Record Document
         const sevenTwelveValidations = {
-            surveyNumber: /Survey No[:\s]+([\d\/]+)/i,
-            ownerNames: /Owner Name[:\s]+([A-Z\s,]+)/gi,  // Captures multiple owners
-            landAreas: /Area[:\s]+([\d.]+\s*[A-Za-z]+)/gi, // Captures multiple land areas
-            villageName: /Village[:\s]+([A-Z\s]+)/i,
-            cropDetails: /Crop Details[:\s]+([\w\s,]+)/i
+            surveyNumber: /gat kramank v upavibhag[:\s]+([\d\/]+)/i,
+            ownerNames: /Name of the occupant[:\s]+([A-Z\s,]+)/gi,
+            landAreas: /Area[:\s]+([\d.]+\s*[A-Za-z]+)/gi,
+            villageName: /(?:ब्लॉक|Block)[.:\s]*[-\s]*([^\n]+?)(?=\s*(?:जिल्हा|जि\.|District)|$)/i,
+            districtName: /District\s*:-\s*([^\n\(\)]+)/i,
+            cropDetails: /Details of Area Under Crop[:\s]+([\w\s,]+)/i
         };
-        
-        // Step 4: Define Validation Criteria for Marathi 7/12 Land Record Document
-        const marathiSevenTwelveValidations = {
-            surveyNumber: /(?:गट क्रमांक व उपविभाग)[\.:\s]*([\d\/]+)/i,
-            ownerNames: /(?:भोगवटादाराचे नाव|मालकाचे नाव)[\.:\s]*([\s\S]+?)(?=\n(?:गाव|मौजे|तालुका|जिल्हा))/gi, // Captures all names until next field
-            landAreas: /क्षेत्र[\.:\s]*([\d\.]+\s*[^\s\d]+)/gi,  // Captures multiple land areas
-            villageName: /(?:गाव|मौजे)[\.:\s]*([^\n,]+)/i,
-            talukaName: /(?:तालुका|ता\.)[\.:\s]*([^\n,]+)/i,
-            districtName: /(?:जिल्हा|जि\.)[\.:\s]*([^\n,]+)/i
-        };
-        
 
-        // Step 5: Identify Document Type
+        const marathiSevenTwelveValidations = {
+            surveyNumber: /(?:गट क्रमांक|गट क्रमांक व उपविभाग|गट नं\.|गट क्र\.|गट)[\.:।\s]*([०-९\d\/\-\s]+?)(?=[^\d\/\-]|$)/i,
+            ownerNames: /(?:भोगवटादाराचे नाव|मालकाचे नाव)[\.:\s]*([^\n]+?)(?=\s*क्षेत्र|$)/i,
+            landAreas: /क्षेत्र[\.:\s]*([^\n]+?)(?=\s*(?:गट|ब्लॉक|block|$))/i,
+            villageName: /(?:ब्लॉक|Block)[.:\s]*[-\s]*([^\n]+?)(?=\s*(?:जिल्हा|जि\.|District)|$)/i,
+            districtName: /(?:जिल्हा|जि\.|District)\s*:-\s*([^\n\(\)]+)/i
+        };
+
+        // ✅ Step 3: Detect Document Type
+        let documentType = "Unknown";
         let extractedData = {};
         let errors = [];
-        let documentType = "Unknown";
 
-        let feeReceiptMatches = Object.keys(feeReceiptValidations).filter(field => text.match(feeReceiptValidations[field])).length;
-        let sevenTwelveMatches = Object.keys(sevenTwelveValidations).filter(field => text.match(sevenTwelveValidations[field])).length;
-        let marathiSevenTwelveMatches = Object.keys(marathiSevenTwelveValidations).filter(field => text.match(marathiSevenTwelveValidations[field])).length;
+        const detectType = () => {
+            let feeReceiptMatches = Object.keys(feeReceiptValidations).filter(field => text.match(feeReceiptValidations[field])).length;
+            let sevenTwelveMatches = Object.keys(sevenTwelveValidations).filter(field => text.match(sevenTwelveValidations[field])).length;
+            let marathiSevenTwelveMatches = Object.keys(marathiSevenTwelveValidations).filter(field => text.match(marathiSevenTwelveValidations[field])).length;
 
-        if (feeReceiptMatches >= 3) {
-            documentType = "Fee Receipt";
-            for (let field in feeReceiptValidations) {
-                const match = text.match(feeReceiptValidations[field]);
-                if (match) {
-                    extractedData[field] = match[1].trim();
-                } else {
+            if (feeReceiptMatches >= 3) {
+                return "Fee Receipt";
+            } else if (sevenTwelveMatches >= 2) {
+                return "7/12 Land Record";
+            } else if (marathiSevenTwelveMatches >= 2) {
+                return "Marathi 7/12 Land Record";
+            } else {
+                return "Unknown";
+            }
+        };
+
+        documentType = detectType();
+
+        // ✅ Step 4: Apply Validation Based on Document Type
+        const applyValidation = (validations) => {
+            for (let field in validations) {
+                const match = text.match(validations[field]);
+                extractedData[field] = (match && match[1]) ? match[1].trim() : "";
+                if (!match) {
                     errors.push(`Missing or invalid ${field}`);
                 }
             }
-        } else if (sevenTwelveMatches >= 2) { // Reduced threshold for 7/12 Land Record
-            documentType = "7/12 Land Record";
-            for (let field in sevenTwelveValidations) {
-                const match = text.match(sevenTwelveValidations[field]);
-                if (match) {
-                    extractedData[field] = match[1].trim();
-                } else {
-                    errors.push(`Missing or invalid ${field}`);
-                }
-            }
-        } else if (marathiSevenTwelveMatches >= 2) { // Reduced threshold for Marathi 7/12 Land Record
-            documentType = "Marathi 7/12 Land Record";
-            for (let field in marathiSevenTwelveValidations) {
-                const match = text.match(marathiSevenTwelveValidations[field]);
-                if (match) {
-                    extractedData[field] = match[1].trim();
-                } else {
-                    errors.push(`Missing or invalid ${field}`);
-                }
-            }
+        };
+
+        if (documentType === "Fee Receipt") {
+            applyValidation(feeReceiptValidations);
+        } else if (documentType === "7/12 Land Record") {
+            applyValidation(sevenTwelveValidations);
+        } else if (documentType === "Marathi 7/12 Land Record") {
+            applyValidation(marathiSevenTwelveValidations);
         } else {
             return res.json({ success: false, message: "Unknown document type", errors });
         }
 
-        // Step 6: Perform Fraud Detection (Only for 7/12 Land Records)
+        // ✅ Step 5: Perform Fraud Detection (Only for 7/12 Land Records)
         let fraudResults = {};
-        if (documentType === "7/12 Land Record" || documentType === "Marathi 7/12 Land Record") {
-            fraudResults = await detectFraud(extractedData, text, filePath, documentType === "Marathi 7/12 Land Record" ? 'mr' : 'en');
-            console.log("Fraud Results:", fraudResults); // Debug: Log fraud detection results
+
+        // ✅ Step 4: Perform Fraud Detection
+        if (documentType.includes("7/12")) {
+            try {
+                // Determine document language
+                const language = documentType === "Marathi 7/12 Land Record" ? 'mr' : 'en';
+            
+                // Perform fraud detection
+                fraudResults = await detectFraud(extractedData, text, filePath, language, ownerName);
+                console.log('Fraud detection results:', fraudResults);
+                
+                // Return success response
+                return res.json({
+                    success: true,
+                    verified: !fraudResults.isFraudulent,
+                    message: fraudResults.isFraudulent ? 'Document verification failed' : 'Document verification successful',
+                    details: {
+                        surveyNumber: fraudResults.details?.surveyNumber,
+                        ownerName: {
+                            database: fraudResults.details?.ownerName?.database,
+                            extracted: fraudResults.details?.ownerName?.extracted,
+                            input: ownerName
+                        },
+                        landArea: fraudResults.details?.landArea
+                    }
+                });
+            } catch (error) {
+                console.error('Error in fraud detection:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error during document verification',
+                    error: error.message
+                });
+            }
         }
 
-        // Step 7: Return Validation and Fraud Detection Results
+        // ✅ Step 6: Return Validation and Fraud Detection Results
         if (errors.length > 0) {
             return res.json({
                 success: false,
@@ -167,18 +206,12 @@ router.get("/validate-document/:filename", async (req, res) => {
             });
         }
 
-        return res.json({
-            success: true,
-            message: `${documentType} is valid`,
-            extractedData,
-            fraudResults
-        });
-
+        console.log('Sending response:', response);
+        res.json(response);
     } catch (err) {
         console.error("Validation Error:", err);
         res.status(500).json({ success: false, message: "Error processing document", error: err.message });
     }
 });
-
 
 module.exports = router;

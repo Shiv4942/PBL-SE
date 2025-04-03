@@ -1,6 +1,6 @@
-const mysql = require("mysql2");//to connect mysql
+const mysql = require("mysql2/promise");
 
-// Create a connection pool (better for multiple connections)
+// ✅ Create a MySQL2 connection pool with promise-based API
 const pool = mysql.createPool({
     host: "localhost",
     user: "root",
@@ -11,14 +11,16 @@ const pool = mysql.createPool({
     queueLimit: 0,
 });
 
-// Check if database is connected
-pool.getConnection((err, connection) => {
-    if (err) {
-        console.error("Database connection failed:", err);
-    } else {
+// ✅ Check if the database is connected
+(async () => {
+    try {
+        const connection = await pool.getConnection();
         console.log("Connected to MySQL database!");
-        connection.release();//returns the connection back to pool after it has been used
+        connection.release();
+    } catch (err) {
+        console.error("Database connection failed:", err);
     }
-});
+})();
 
-module.exports = pool; // Use promise-based queries
+// ✅ Export the promise-based pool
+module.exports = pool;  // No need for `.promise()`

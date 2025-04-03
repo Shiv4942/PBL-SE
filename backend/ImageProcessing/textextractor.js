@@ -5,167 +5,272 @@ const path = require("path");
 const { convert } = require("pdf-poppler");
 const sharp = require("sharp");
 
+// Configure Tesseract parameters optimized for form documents
+const tesseractConfig = {
+    logger: m => console.log(m),
+    psm: 6,  // Assume uniform block of text (better for tables)
+    oem: 3,  // Default OCR Engine Mode
+    preserve_interword_spaces: 1,
+    tessjs_create_pdf: 0,
+    tessjs_parameters: [
+        "--dpi", "300",
+        "-c", "preserve_interword_spaces=1",
+        "-c", "textord_tabfind_find_tables=1",
+        "-c", "textord_tablefind_recognize_tables=1",
+        "-c", "textord_min_linesize=1.2"
+    ]
+};
+
+
 // Extract text from PDFs with selectable text
 const extractTextFromPDF = async (filePath, lang = "eng+mar") => {
     try {
         const dataBuffer = fs.readFileSync(filePath);
-        const data = await pdf(dataBuffer);
+        const data = await pdf(dataBuffer, {
+            pagerender: render_page,  // Custom renderer for better text extraction
+            max: 0,  // No page limit
+        });
         
-        if (data.text.trim()) {
-            return data.text; // If selectable text exists, return it
-        } else {
-            console.log("No selectable text found, trying OCR...");
-            return await extractTextFromScannedPDF(filePath, lang);
-        }
+        const extractedText = data.text.trim();
+        return extractedText || await extractTextFromScannedPDF(filePath, lang);
     } catch (error) {
-        throw new Error("PDF Extraction Failed: " + error.message);
+        console.error(`Error extracting text from PDF: ${error.message}`);
+        return await extractTextFromScannedPDF(filePath, lang);
     }
 };
 
-// Convert PDF pages to images and apply OCR
-const extractTextFromScannedPDF = async (filePath, lang = "eng+mar") => {
-    const outputPath = filePath.replace(".pdf", "");
-
+// Custom PDF page renderer
+const render_page = async (pageData) => {
     try {
-        // Convert PDF to image (PNG) with high resolution (300 DPI)
-        await convert(filePath, {
-            format: "png",
-            out_dir: path.dirname(filePath),
-            out_prefix: path.basename(outputPath),
-            resolution: 300,
-        });
+        const renderOptions = {
+            normalizeWhitespace: true,
+            disableCombineTextItems: false
+        };
+        return await pageData.getTextContent(renderOptions);
+    } catch (error) {
+        console.error(`Error rendering PDF page: ${error.message}`);
+        return null;
+    }
+};
 
-        // Get all extracted images
-        const files = fs.readdirSync(path.dirname(filePath))
-            .filter(file => file.startsWith(path.basename(outputPath)) && file.endsWith(".png"));
 
-        let extractedText = "";
-        for (const file of files) {
-            const imagePath = path.join(path.dirname(filePath), file);
+// Convert PDF pages to images and apply OCR  
+const extractTextFromScannedPDF = async (filePath, lang = "eng+mar") => {  
+    const outputPath = filePath.replace(".pdf", "");  
+    await convert(filePath, {  
+        format: "png",  
+        out_dir: path.dirname(filePath),  
+        out_prefix: path.basename(outputPath),  
+        resolution: 300,  
+    });  
 
-            try {
-                // Preprocess the image before OCR
-                const processedImagePath = await preprocessImage(imagePath);
+    const imageFiles = fs.readdirSync(path.dirname(filePath))  
+        .filter(file => file.startsWith(path.basename(outputPath)) && file.endsWith(".png"));  
 
-                // Use OCR for Marathi + English
-                const { data: { text } } = await Tesseract.recognize(processedImagePath, lang, {
-                    logger: m => console.log(m), // Log OCR progress
+    const extractedTexts = await Promise.all(imageFiles.map(file => processImageForOCR(file)));  
+    return extractedTexts.join("\n").trim() || "No text extracted via OCR.";  
+};  
+
+// Process a single image file for OCR with table structure preservation
+const processImageForOCR = async (file) => {
+    const imagePath = path.join(path.dirname(file), file);
+    const processedImagePath = await preprocessImage(imagePath);
+    
+    try {
+        // First pass: detect table structure
+        const { data: { hocr, confidence } } = await Tesseract.recognize(
+            processedImagePath,
+            'eng+mar',
+            { ...tesseractConfig, psm: 6 }
+        );
+
+        // Second pass: detailed text recognition
+        const { data: { text } } = await Tesseract.recognize(
+            processedImagePath,
+            'eng+mar',
+            { ...tesseractConfig, psm: 4 }
+        );
+
+        console.log(`OCR Confidence: ${confidence}%`);
+
+        // Combine and post-process the extracted text
+        const cleanedText = postProcessText(text, hocr);
+        
+        fs.unlinkSync(processedImagePath); // Clean up processed image
+        return cleanedText;
+    } catch (error) {
+        console.error(`OCR Error: ${error.message}`);
+        fs.unlinkSync(processedImagePath); // Ensure cleanup on error
+        return '';
+    }
+};
+
+// Post-process extracted text with table structure preservation
+const postProcessText = (text, hocr = '') => {
+    // Extract table structure from hOCR if available
+    const tableStructure = hocr ? extractTableStructure(hocr) : null;
+
+    let processedText = text
+        // Preserve table structure
+        .split('\n')
+        .map(line => {
+            // Clean up the line while preserving structure
+            return line
+                .replace(/[\|\[\]\{\}]/g, '') // Remove unwanted characters
+                .replace(/\s+/g, ' ')  // Normalize spaces
+                .trim();
+        })
+        .filter(line => line.length > 0)  // Remove empty lines
+        .join('\n');
+
+    // Apply table structure if available
+    if (tableStructure) {
+        processedText = applyTableStructure(processedText, tableStructure);
+    }
+
+    // Fix common OCR mistakes
+    processedText = processedText
+        // Fix number/letter confusions
+        .replace(/([A-Za-z])1([A-Za-z])/g, '$1l$2')
+        .replace(/([A-Za-z])0([A-Za-z])/g, '$1o$2')
+        // Fix common Marathi character confusions
+        .replace(/॰/g, '.')
+        .replace(/०/g, '0')
+        .trim();
+
+    return processedText;
+};
+
+// Extract table structure from hOCR data
+const extractTableStructure = (hocr) => {
+    // Parse hOCR to identify table cells and their positions
+    const lines = hocr.split('\n');
+    const tableData = [];
+
+    lines.forEach(line => {
+        if (line.includes('ocrx_word')) {
+            const bbox = line.match(/bbox\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/i);
+            if (bbox) {
+                tableData.push({
+                    text: line.match(/>(.*?)<\/span>/)[1],
+                    x1: parseInt(bbox[1]),
+                    y1: parseInt(bbox[2]),
+                    x2: parseInt(bbox[3]),
+                    y2: parseInt(bbox[4])
                 });
-
-                extractedText += text + "\n";
-                
-                // Safely delete processed image
-                try {
-                    if (fs.existsSync(processedImagePath)) {
-                        fs.unlinkSync(processedImagePath);
-                    }
-                } catch (unlinkError) {
-                    console.warn(`Warning: Could not delete temporary file ${processedImagePath}:`, unlinkError.message);
-                }
-            } catch (imageError) {
-                console.error(`Error processing image ${imagePath}:`, imageError);
-                // Continue with next image even if one fails
             }
         }
+    });
 
-        return extractedText.trim() || "No text extracted via OCR.";
-    } catch (error) {
-        throw new Error("Failed to convert PDF to images for OCR: " + error.message);
-    }
+    return tableData;
 };
+
+// Apply table structure to extracted text
+const applyTableStructure = (text, structure) => {
+    // Sort table cells by vertical position first, then horizontal
+    structure.sort((a, b) => {
+        const rowDiff = a.y1 - b.y1;
+        return rowDiff !== 0 ? rowDiff : a.x1 - b.x1;
+    });
+
+    // Group cells into rows based on vertical position
+    const rows = [];
+    let currentRow = [];
+    let currentY = -1;
+
+    structure.forEach(cell => {
+        if (currentY === -1 || Math.abs(cell.y1 - currentY) < 10) {
+            currentRow.push(cell);
+        } else {
+            if (currentRow.length > 0) {
+                rows.push([...currentRow]);
+            }
+            currentRow = [cell];
+        }
+        currentY = cell.y1;
+    });
+
+    if (currentRow.length > 0) {
+        rows.push(currentRow);
+    }
+
+    // Format rows into table structure
+    return rows
+        .map(row => row
+            .sort((a, b) => a.x1 - b.x1)
+            .map(cell => cell.text)
+            .join('\t')
+        )
+        .join('\n');
+};
+
 
 // Extract text from image files (JPG, PNG)
 const extractTextFromImage = async (filePath, lang = "eng+mar") => {
+    const processedImagePath = await preprocessImage(filePath);
+    
     try {
-        // Preprocess the image before OCR
-        const processedImagePath = await preprocessImage(filePath);
+        const { data: { text, confidence } } = await Tesseract.recognize(
+            processedImagePath,
+            lang,
+            tesseractConfig
+        );
 
-        // Use OCR for Marathi + English
-        const { data: { text } } = await Tesseract.recognize(processedImagePath, lang, {
-            logger: m => console.log(m), // Log OCR progress
-        });
-
-        // Safely delete processed image
-        try {
-            if (fs.existsSync(processedImagePath)) {
-                fs.unlinkSync(processedImagePath);
-            }
-        } catch (unlinkError) {
-            console.warn(`Warning: Could not delete temporary file ${processedImagePath}:`, unlinkError.message);
-        }
+        console.log(`OCR Confidence: ${confidence}%`);
+        const cleanedText = postProcessText(text);
         
-        return text.trim() || "No text extracted.";
+        fs.unlinkSync(processedImagePath); // Clean up processed image
+        return cleanedText;
     } catch (error) {
-        throw new Error("Image Text Extraction Failed: " + error.message);
+        console.error(`Image OCR Error: ${error.message}`);
+        fs.unlinkSync(processedImagePath); // Ensure cleanup on error
+        return '';
     }
 };
 
-// Image Preprocessing Function (Sharp)
+
+// Preprocess Image for better OCR results - optimized for forms
 const preprocessImage = async (filePath) => {
-    // Fix the path handling by using path.parse
-    const parsedPath = path.parse(filePath);
-    const processedPath = path.join(
-        parsedPath.dir,
-        `${parsedPath.name}_processed.png`
-    );
+    const processedPath = filePath.replace(/\.(jpg|jpeg|png)$/, "_processed.png");
 
-    try {
-        // Check if the source file exists
-        if (!fs.existsSync(filePath)) {
-            throw new Error(`Source file not found: ${filePath}`);
-        }
-        
-        // Ensure we can write to the destination
-        const destinationDir = path.dirname(processedPath);
-        if (!fs.existsSync(destinationDir)) {
-            fs.mkdirSync(destinationDir, { recursive: true });
-        }
+    // Simple but effective preprocessing for form documents
+    await sharp(filePath)
+        .grayscale()
+        // Enhance contrast
+        .modulate({
+            brightness: 1.2,
+            saturation: 1.0,
+            contrast: 1.3
+        })
+        // Clean noise
+        .median(3)
+        // Normalize for better black and white separation
+        .normalize()
+        // Resize for better OCR
+        .resize(3500, null, {
+            kernel: sharp.kernel.lanczos3,
+            fit: 'inside',
+        })
+        .toFile(processedPath);
 
-        await sharp(filePath)
-            .grayscale()        // Convert to grayscale
-            .threshold(140)     // Binarization (converts to black & white)
-            .sharpen()          // Enhance text edges
-            .resize(2000, null) // Resize for better OCR accuracy
-            .toFile(processedPath);
-
-        // Verify the processed file was created
-        if (!fs.existsSync(processedPath)) {
-            throw new Error(`Failed to create processed image at ${processedPath}`);
-        }
-
-        return processedPath;
-    } catch (error) {
-        console.error("Image Preprocessing Error:", error);
-        // If processing fails, copy the original file as a fallback
-        try {
-            fs.copyFileSync(filePath, processedPath);
-            return processedPath;
-        } catch (copyError) {
-            throw new Error(`Image Preprocessing Failed and fallback copy failed: ${error.message}, Copy error: ${copyError.message}`);
-        }
-    }
+    return processedPath;
 };
 
-// Determine file type and extract text
-const extractTextFromFile = async (filePath, lang = "eng+mar") => {
-    try {
-        // Validate file existence first
-        if (!fs.existsSync(filePath)) {
-            throw new Error(`File not found: ${filePath}`);
-        }
-        
-        const ext = path.extname(filePath).toLowerCase();
-        if (ext === ".pdf") {
-            return await extractTextFromPDF(filePath, lang);
-        } else if ([".jpg", ".jpeg", ".png"].includes(ext)) {
-            return await extractTextFromImage(filePath, lang);
-        } else {
-            throw new Error(`Unsupported file type: ${ext}`);
-        }
-    } catch (error) {
-        console.error("Text Extraction Error:", error);
-        throw new Error(`Text Extraction Failed: ${error.message}`);
-    }
-};
 
-module.exports = { extractTextFromFile };
+// Determine file type and extract text  
+const extractTextFromFile = async (filePath, lang = "eng+mar") => {  
+    const ext = path.extname(filePath).toLowerCase();  
+    
+    switch (ext) {  
+        case ".pdf":  
+            return await extractTextFromPDF(filePath, lang);  
+        case ".jpg":  
+        case ".jpeg":  
+        case ".png":  
+            return await extractTextFromImage(filePath, lang);  
+        default:  
+            throw new Error("Unsupported file type");  
+    }  
+};  
+
+module.exports = { extractTextFromFile };  
