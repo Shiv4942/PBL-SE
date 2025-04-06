@@ -24,3 +24,6 @@ SELECT * FROM land_records;
 SET SQL_SAFE_UPDATES = 0;
 DELETE FROM land_records WHERE owner_name = 'Arun Gaikwad';
 SET SQL_SAFE_UPDATES = 1;
+INSERT INTO land_records(survey_number , owner_name , area , land_type) VALUES('55' , 'sanjay nikam' , '5' , 'Farmland');
+INSERT INTO land_records(survey_number , owner_name , area , land_type) VALUES('142/2/142/1/3/143/3' , 'sunilkumar mahavir sharma' , '5' , 'Farmland');
+INSERT INTO land_records(survey_number , owner_name , area , land_type) VALUES('45/1' , 'jagannath dodmise' , '5' , 'Residential');

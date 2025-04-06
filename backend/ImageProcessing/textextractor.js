@@ -133,9 +133,14 @@ const postProcessText = (text, hocr = '') => {
         // Fix number/letter confusions
         .replace(/([A-Za-z])1([A-Za-z])/g, '$1l$2')
         .replace(/([A-Za-z])0([A-Za-z])/g, '$1o$2')
+        .replace(/§/g, '5') // Attempt to correct '5' recognized as 's'  
+        .replace(/l/g, '1')
+        .replace(/5/g , '5')
         // Fix common Marathi character confusions
         .replace(/॰/g, '.')
         .replace(/०/g, '0')
+        .replace(/\+/g , 'v')
+
         .trim();
 
     return processedText;

@@ -34,25 +34,41 @@ const getAllSurveyNumbers = async () => {
 };
 
 // ✅ Function to normalize survey number format
+// Enhanced survey number normalization
 const normalizeSurveyNumber = (surveyNumber) => {
     if (!surveyNumber) return '';
     
-    return surveyNumber
+    // First pass - normalize basic characters
+    let normalized = surveyNumber
         .toString()
         // Convert Devanagari numerals to English
         .replace(/[०-९]/g, d => String.fromCharCode(d.charCodeAt(0) - 0x0966 + 0x30))
         // Remove all spaces
         .replace(/\s+/g, '')
-        // Remove any characters that aren't numbers, forward slashes, or hyphens
-        .replace(/[^0-9\/\-]/g, '')
+        // Handle "plot n.X" format by removing "plot" and keeping number
+        .replace(/plot[nN]\.?(\d+)/i, '$1')
+        // Remove any characters that aren't numbers, forward slashes, periods, or hyphens
+        .replace(/[^0-9\/\.\-]/g, '')
         // Remove leading/trailing slashes
         .replace(/^\/+|\/+$/g, '')
-        // Ensure consistent format for comparison (e.g., '123/5')
-        .replace(/\/{2,}/g, '/')
-        .replace(/\-+/g, '-');
+        // Ensure consistent format for comparison
+        .replace(/\/{2,}/g, '/');
+    
+    // Handle special case - sometimes the format might have 'plot' indicators
+    if (surveyNumber.toLowerCase().includes('plot')) {
+        const plotMatch = surveyNumber.match(/plot\s*n?\.?\s*(\d+)/i);
+        if (plotMatch && plotMatch[1]) {
+            // Add plot number at the end with consistent format
+            normalized = normalized + '/p' + plotMatch[1];
+        }
+    }
+    
+    console.log(`Original: ${surveyNumber}, Normalized: ${normalized}`);
+    return normalized;
 };
 
 // ✅ Function to find the closest valid survey number using fuzzy matching
+// Enhanced fuzzy matching for complex survey numbers
 const findClosestSurveyNumber = async (extractedSurvey, allSurveys = []) => {
     if (!extractedSurvey) return '';
     
@@ -63,189 +79,161 @@ const findClosestSurveyNumber = async (extractedSurvey, allSurveys = []) => {
     if (allSurveys.length === 0) {
         allSurveys = await getAllSurveyNumbers();
     }
-    console.log('All survey numbers from DB:', allSurveys);
     
     // First try exact match after normalization
     for (const dbSurvey of allSurveys) {
         const normalizedDb = normalizeSurveyNumber(dbSurvey);
-        console.log(`Comparing normalized: ${normalizedExtracted} with DB: ${normalizedDb}`);
         
         // Try exact match
         if (normalizedExtracted === normalizedDb) {
             console.log('Exact match found:', dbSurvey);
             return dbSurvey;
         }
+    }
+    
+    // If no exact match, try segment matching
+    // Break down survey numbers into segments for partial matching
+    const extractedSegments = normalizedExtracted.split('/');
+    let bestMatch = null;
+    let highestMatchScore = 0;
+    
+    for (const dbSurvey of allSurveys) {
+        const dbSegments = normalizeSurveyNumber(dbSurvey).split('/');
         
-        // Try without leading zeros
-        const noLeadingZeros = normalizedExtracted.replace(/^0+/, '');
-        if (noLeadingZeros === normalizedDb) {
-            console.log('Match found after removing leading zeros:', dbSurvey);
-            return dbSurvey;
+        // Calculate matching segments
+        let matchCount = 0;
+        for (const segment of extractedSegments) {
+            if (dbSegments.includes(segment)) {
+                matchCount++;
+            }
+        }
+        
+        // Calculate match score as percentage of matching segments
+        const matchScore = matchCount / Math.max(extractedSegments.length, dbSegments.length);
+        
+        if (matchScore > highestMatchScore) {
+            highestMatchScore = matchScore;
+            bestMatch = dbSurvey;
         }
     }
     
-    // If no exact match, try fuzzy matching
-    let closestMatch = extractedSurvey;
-    let minDistance = Infinity;
-
-    for (const dbSurvey of allSurveys) {
-        const normalizedDb = normalizeSurveyNumber(dbSurvey);
-        const distance = levenshtein.get(normalizedExtracted, normalizedDb);
-
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestMatch = dbSurvey;
-        }
-    }
-
-    console.log('Closest match:', closestMatch, 'with distance:', minDistance);
-    // Return closest match only if the difference is minor (distance ≤ 2)
-    return minDistance <= 2 ? closestMatch : extractedSurvey;
+    // Only return if match score is above threshold
+    console.log('Best partial match:', bestMatch, 'with score:', highestMatchScore);
+    return highestMatchScore > 0.6 ? bestMatch : extractedSurvey;
 };
 
 // ✅ Function to validate extracted data against the database
+// Enhanced validation function with debug logging
 const validateDocumentData = async (extractedData, ownerName = null) => {
-    let connection;
+    console.log('Starting validation with data:', JSON.stringify(extractedData));
+    console.log('Owner name provided:', ownerName);
+    
+    // Initialize validation result
+    const validationResult = {
+        isValid: false,
+        details: {
+            surveyNumber: {
+                extracted: extractedData.surveyNumber || '',
+                matched: ''
+            }
+        },
+        message: ''
+    };
 
     try {
-        connection = await pool.getConnection();
-
-        // Get all survey numbers first
+        // 1. Survey Number Validation
         const allSurveyNumbers = await getAllSurveyNumbers();
-        console.log('All survey numbers from DB:', allSurveyNumbers);
-
-        if (!extractedData.surveyNumber) {
-            return {
-                isValid: false,
-                message: 'No survey number found in document',
-                details: { error: 'Missing survey number' }
-            };
-        }
-
-        // Normalize the extracted survey number
         const normalizedExtracted = normalizeSurveyNumber(extractedData.surveyNumber);
-        console.log('Normalized extracted survey number:', normalizedExtracted);
+        const matchedSurveyNumber = await findClosestSurveyNumber(extractedData.surveyNumber, allSurveyNumbers);
 
-        // Try exact match first
-        let matchedSurveyNumber = null;
-        for (const dbNumber of allSurveyNumbers) {
-            const normalizedDb = normalizeSurveyNumber(dbNumber);
-            if (normalizedDb === normalizedExtracted) {
-                matchedSurveyNumber = dbNumber;
-                console.log('Found exact match:', matchedSurveyNumber);
-                break;
-            }
-        }
+        // Log survey number comparison
+        console.log('Survey number comparison:', {
+            extracted: extractedData.surveyNumber,
+            normalized: normalizedExtracted,
+            matched: matchedSurveyNumber,
+            allSurveys: allSurveyNumbers
+        });
 
-        // If no exact match, try fuzzy matching
+        // If no match found for survey number
         if (!matchedSurveyNumber) {
-            let minDistance = Infinity;
-            let closestMatch = null;
-
-            for (const dbNumber of allSurveyNumbers) {
-                const normalizedDb = normalizeSurveyNumber(dbNumber);
-                const distance = levenshtein.get(normalizedExtracted, normalizedDb);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestMatch = dbNumber;
-                }
-            }
-
-            // Only use fuzzy match if it's close enough
-            if (minDistance <= 2) {
-                matchedSurveyNumber = closestMatch;
-                console.log('Found fuzzy match:', matchedSurveyNumber, 'with distance:', minDistance);
-            }
-        }
-
-        // If no match found at all
-        if (!matchedSurveyNumber) {
-            return {
-                isValid: false,
-                message: 'Survey number not found in records',
-                details: {
-                    extractedNumber: extractedData.surveyNumber,
-                    normalizedNumber: normalizedExtracted
+            validationResult.isValid = false;
+            validationResult.message = 'Invalid survey number';
+            validationResult.details = {
+                surveyNumber: {
+                    extracted: extractedData.surveyNumber,
+                    matched: null,
+                    reason: 'No matching survey number found'
                 }
             };
+            return validationResult;
         }
 
-        // Query for matching survey number
-        const [rows] = await connection.execute(
-            `SELECT * FROM land_records WHERE survey_number = ?`,
-            [matchedSurveyNumber]
-        );
-        console.log('Database query result rows:', rows.length);
-        console.log('Searching for survey number:', matchedSurveyNumber);
-
-        // Document is invalid if survey number not found
-        if (rows.length === 0) {
-            console.log('No matching survey number found in database');
-            return {
-                isValid: false,
-                message: 'Survey number not found in database',
-                details: {
-                    extractedNumber: extractedData.surveyNumber,
-                    matchedNumber: matchedSurveyNumber,
-                    normalizedNumber: normalizedExtracted
-                }
-            };
-        }
-
-        // Check owner name if provided
+        // 2. Owner Name Validation (if provided)
         if (ownerName) {
-            const normalizedInput = ownerName.toLowerCase().trim();
-            const normalizedDb = rows[0].owner_name.toLowerCase().trim();
-            const normalizedExtracted = extractedData.ownerNames ? 
-                extractedData.ownerNames.toLowerCase().trim() : '';
+            let connection;
+            try {
+                connection = await pool.getConnection();
+                const [rows] = await connection.execute(
+                    'SELECT owner_name FROM land_records WHERE survey_number = ?',
+                    [matchedSurveyNumber]
+                );
+                connection.release();
 
-            console.log('Comparing owner names:', {
-                input: normalizedInput,
-                extracted: normalizedExtracted,
-                database: normalizedDb
-            });
+                if (rows.length > 0) {
+                    const dbOwnerName = rows[0].owner_name;
+                    const normalizedInput = ownerName.toLowerCase().trim();
+                    const normalizedDb = dbOwnerName.toLowerCase().trim();
 
-            if (normalizedInput !== normalizedDb) {
-                return {
-                    isValid: false,
-                    message: 'Owner name does not match database records',
-                    details: {
-                        surveyNumber: matchedSurveyNumber,
-                        ownerName: {
-                            input: ownerName,
-                            extracted: extractedData.ownerNames,
-                            database: rows[0].owner_name
-                        },
-                        landArea: extractedData.landAreas
+                    // Log owner name comparison
+                    console.log('Owner name comparison:', {
+                        input: normalizedInput,
+                        database: normalizedDb,
+                        isMatch: normalizedInput === normalizedDb
+                    });
+
+                    validationResult.details.ownerName = {
+                        input: ownerName,
+                        database: dbOwnerName,
+                        extracted: extractedData.ownerNames || 'Not extracted'
+                    };
+
+                    // Fuzzy match for owner names
+                    const distance = levenshtein.get(normalizedInput, normalizedDb);
+                    const similarity = 1 - (distance / Math.max(normalizedInput.length, normalizedDb.length));
+
+                    if (similarity >= 0.8) {
+                        validationResult.isValid = true;
+                        validationResult.message = 'Document validated successfully';
+                    } else {
+                        validationResult.isValid = false;
+                        validationResult.message = 'Owner name mismatch';
+                        validationResult.details.ownerName.reason = 'Owner name does not match records';
                     }
-                };
+                } else {
+                    validationResult.isValid = false;
+                    validationResult.message = 'Survey number not found in database';
+                }
+            } catch (error) {
+                console.error('Database error during owner validation:', error);
+                if (connection) connection.release();
+                throw error;
             }
+        } else {
+            // If no owner name provided, only validate survey number
+            validationResult.isValid = true;
+            validationResult.message = 'Survey number validated successfully';
+            validationResult.details.surveyNumber = matchedSurveyNumber;
         }
-
-        // Return success if all validations pass
-        return {
-            isValid: true,
-            message: 'Document verification successful',
-            details: {
-                surveyNumber: matchedSurveyNumber,
-                ownerName: {
-                    database: rows[0].owner_name,
-                    extracted: extractedData.ownerNames,
-                    input: ownerName || 'Not provided'
-                },
-                landArea: extractedData.landAreas
-            }
-        };
 
     } catch (error) {
-        console.error("Validation error:", error);
-        return { isValid: false, invalidFields: ['Database error occurred'] };
-
-    } finally {
-        if (connection) connection.release();
+        console.error('Validation error:', error);
+        validationResult.isValid = false;
+        validationResult.message = 'Validation error occurred';
+        validationResult.details.error = error.message;
     }
-};
 
+    return validationResult;
+};
 // ✅ Main fraud detection function
 const detectFraud = async (extractedData, documentText, filePath, language = 'en', ownerName = null) => {
     const fraudChecks = {
