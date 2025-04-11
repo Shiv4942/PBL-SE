@@ -1,4 +1,3 @@
-
 document.getElementById("menuToggle").addEventListener("click", function () {
     document.getElementById("navLinks").classList.toggle("active");
 });
@@ -15,6 +14,7 @@ const progressBar = getElement('progressBar');
 const progressStatus = getElement('progressStatus');
 const ownerNameContainer = getElement('ownerNameContainer');
 const ownerNameInput = getElement('ownerNameInput');
+const resultBtn = getElement('resultBtn');
 const steps = document.querySelectorAll('.step');
 const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
 const mobileMenu = document.querySelector('.mobile-menu');
@@ -501,7 +501,7 @@ function initializeUpload() {
         if (selectedFile && ownerNameInput.value.trim()) {
             startVerification();
         } else {
-            alert('Please enter owner name before verifying');
+            showError('Please enter owner name before verifying');
         }
     });
 
@@ -704,7 +704,6 @@ function uploadFile() {
             progressContainer.style.display = 'none';
             
             // Show view result button
-            const resultBtn = getElement('resultBtn');
             if (resultBtn) {
                 resultBtn.style.display = 'block';
                 resultBtn.addEventListener('click', () => showDetailedResults(data, ownerNameInput.value));
@@ -718,8 +717,10 @@ function uploadFile() {
         console.error("Error:", error);
         completeProgressAnimation(); // Use new function here too
         progressContainer.style.display = 'none';
-        alert('An error occurred during verification. Please try again.');
-        location.reload();
+        showError('An error occurred during verification. Please try again.');
+        setTimeout(() => {
+            resetUpload();
+        }, 2000);
     });
 }
 
@@ -789,12 +790,7 @@ function showDetailedResults(data, ownerName) {
     </div>
 `;
 
-//<div style="margin-bottom:15px;">
-        //     <h4 style="margin:0 0 5px; font-size:1.2rem; color:#333;">📏 Land Area</h4>
-        //     <p style="margin:0; color:#555; font-size:1rem;">${data.details?.landArea || 'N/A'}</p>
-        // </div>
     // Hide the result button once results are displayed
-    const resultBtn = getElement('resultBtn');
     if (resultBtn) resultBtn.style.display = 'none';
 }
 
@@ -871,6 +867,22 @@ document.addEventListener('DOMContentLoaded', function() {
         @keyframes sway {
             from { transform: translateX(-25px); }
             to { transform: translateX(25px); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .error-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #f44336;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
         }
     `;
     document.head.appendChild(style);

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>About Us - Document Verification System</title>
     <link rel="stylesheet" href="about.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation Bar -->
     <nav class="nav">
         <div class="nav-container">
             <img src="logo.png" alt="Logo" class="logo-img">
@@ -19,59 +19,203 @@
             <div class="nav-links" id="navLinks">
                 <a class="nav-btn" href="home.html"><i class="fas fa-home"></i> Home</a>
                 <a class="nav-btn" href="verify.html"><i class="fas fa-check-circle"></i> Verify</a>
-                <a class="nav-btn" href="area.html"><i class="fas fa-info-circle"></i> Area Calculator</a>
-                <a class="nav-btn active" href="about.html"><i class="fas fa-info-circle"></i> About Us</a>
+                <a class="nav-btn" href="area.html"><i class="fas fa-calculator"></i> Area Calculator</a>
+                <a class="nav-btn" href="about.html"><i class="fas fa-info-circle"></i> About Us</a>
                 <a class="nav-btn" href="contact.html"><i class="fas fa-envelope"></i> Contact Us</a>
             </div>
         </div>
     </nav>
 
-    <!-- About Us Section -->
-    <section class="about-us">
-        <h1>Meet Our Team</h1>
-        <p>We are a passionate team dedicated to delivering excellence.</p>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>About VerifyMate</h1>
+            <p>We're on a mission to revolutionize document verification with cutting-edge technology</p>
+        </div>
+    </section>
 
-        <div class="team-container">
-            <!-- Team Member 1 -->
-            <div class="team-card">
-                <img src="member1.jpg" alt="Suyash Dive">
-                <h3>Suyash Dive</h3>
-                <p>Frontend Developer</p>
-                <p>Expert in creating engaging UI/UX designs with React and TailwindCSS.</p>
+    <!-- Mission Section -->
+    <section class="mission">
+        <div class="mission-container">
+            <div class="mission-content">
+                <h2>Our Mission</h2>
+                <p>At VerifyMate, we're dedicated to providing a secure, efficient, and user-friendly platform for document verification. Our goal is to eliminate fraud and streamline the verification process for individuals and organizations worldwide.</p>
+                <div class="mission-stats">
+                    <div class="stat">
+                        <span class="stat-number">10K+</span>
+                        <span class="stat-label">Users</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">1M+</span>
+                        <span class="stat-label">Documents</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">99.9%</span>
+                        <span class="stat-label">Accuracy</span>
+                    </div>
+                </div>
             </div>
-
-            <!-- Team Member 2 -->
-            <div class="team-card">
-                <img src="member2.jpg" alt="Shivendra Gaikwad">
-                <h3>Shivendra Gaikwad</h3>
-                <p>Backend Developer</p>
-                <p>Specialist in Node.js, Express, and database management.</p>
-            </div>
-
-            <!-- Team Member 3 -->
-            <div class="team-card">
-                <img src="member3.jpg" alt="Kaivalya Deshpande">
-                <h3>Kaivalya Deshpande</h3>
-                <p>Project Manager</p>
-                <p>Ensures smooth project execution and team collaboration.</p>
-            </div>
-
-            <!-- Team Member 4 -->
-            <div class="team-card">
-                <img src="member4.jpg" alt="Indrajeet Dodmise">
-                <h3>Indrajeet Dodmise</h3>
-                <p>UI/UX Designer</p>
-                <p>Creates stunning designs and user-friendly experiences.</p>
+            <div class="mission-image">
+                <img src="mission.jpg" alt="Our Mission">
             </div>
         </div>
     </section>
 
+    <!-- Team Section -->
+    <section class="team">
+        <div class="section-header">
+            <h2>Meet Our Team</h2>
+            <p>We are a passionate team dedicated to delivering excellence in document verification technology.</p>
+        </div>
+
+        <div class="team-container">
+            <!-- Team Member 1 -->
+            <div class="team-card">
+                <div class="team-image">
+                    <img src="member1.jpg" alt="Suyash Dive">
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="team-info">
+                    <h3>Suyash Dive</h3>
+                    <p class="team-title">Frontend Developer</p>
+                    <p class="team-description">Expert in creating engaging UI/UX designs with React and TailwindCSS.</p>
+                </div>
+            </div>
+
+            <!-- Team Member 2 -->
+            <div class="team-card">
+                <div class="team-image">
+                    <img src="member2.jpg" alt="Shivendra Gaikwad">
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="team-info">
+                    <h3>Shivendra Gaikwad</h3>
+                    <p class="team-title">Backend Developer</p>
+                    <p class="team-description">Specialist in Node.js, Express, and database management.</p>
+                </div>
+            </div>
+
+            <!-- Team Member 3 -->
+            <div class="team-card">
+                <div class="team-image">
+                    <img src="member3.jpg" alt="Kaivalya Deshpande">
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="team-info">
+                    <h3>Kaivalya Deshpande</h3>
+                    <p class="team-title">Project Manager</p>
+                    <p class="team-description">Ensures smooth project execution and team collaboration.</p>
+                </div>
+            </div>
+
+            <!-- Team Member 4 -->
+            <div class="team-card">
+                <div class="team-image">
+                    <img src="member4.jpg" alt="Indrajeet Dodmise">
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="team-info">
+                    <h3>Indrajeet Dodmise</h3>
+                    <p class="team-title">UI/UX Designer</p>
+                    <p class="team-description">Creates stunning designs and user-friendly experiences.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="values">
+        <div class="section-header">
+            <h2>Our Values</h2>
+            <p>The principles that guide everything we do at VerifyMate</p>
+        </div>
+        <div class="values-container">
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Security</h3>
+                <p>We prioritize the security of your documents and personal information above all else.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3>Efficiency</h3>
+                <p>Our platform delivers fast, accurate results to save you time and resources.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>User-Centric</h3>
+                <p>We design our solutions with the user experience in mind, making verification simple and intuitive.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Innovation</h3>
+                <p>We continuously improve our technology to stay ahead of emerging threats and challenges.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="verify.html">Verify</a></li>
+                    <li><a href="area.html">Area Calculator</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: info@verifymate.com</p>
+                <p>Phone: +1 (123) 456-7890</p>
+                <p>Address: 123 Main St, City, Country</p>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 VerifyMate. All rights reserved.</p>
+        </div>
+    </footer>
+
     <script>
         // Toggle Mobile Menu
-        document.getElementById("menuToggle").addEventListener("click", function () {
+        document.getElementById("menuToggle").addEventListener("click", function() {
             document.getElementById("navLinks").classList.toggle("active");
         });
     </script>
-
 </body>
 </html>

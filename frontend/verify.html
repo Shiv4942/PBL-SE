@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Verification System</title>
+    <title>Document Verification</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="verify.css">
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="nav">
         <div class="nav-container">
             <img src="logo.png" alt="Logo" class="logo-img">
+            
+            <!-- Menu Icon -->
             <i class="fas fa-bars menu-icon" id="menuToggle"></i>
+    
             <div class="nav-links" id="navLinks">
                 <a class="nav-btn" href="home.html"><i class="fas fa-home"></i> Home</a>
                 <a class="nav-btn" href="verify.html"><i class="fas fa-check-circle"></i> Verify</a>
-                <a class="nav-btn" href="area.html"><i class="fas fa-info-circle"></i> Area Calculator</a>
+                <a class="nav-btn" href="area.html"><i class="fas fa-calculator"></i> Area Calculator</a>
                 <a class="nav-btn" href="about.html"><i class="fas fa-info-circle"></i> About Us</a>
                 <a class="nav-btn" href="contact.html"><i class="fas fa-envelope"></i> Contact Us</a>
             </div>
@@ -25,35 +27,77 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <h1>Secure Document Verification</h1>
-        <p>Verify any document instantly with our AI-powered platform</p>
+        <div class="hero-content">
+            <h1>Secure Document Verification</h1>
+            <p>Verify any document instantly with our AI-powered platform</p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number">99.9%</span>
+                    <span class="stat-label">Accuracy</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">10s</span>
+                    <span class="stat-label">Average Time</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">1M+</span>
+                    <span class="stat-label">Documents Verified</span>
+                </div>
+            </div>
+        </div>
     </section>
     
     <!-- Verification Section -->
     <div class="verification-container">
         <div class="steps">
-            <div class="step active"><i class="fas fa-upload step-icon"></i><h3>Upload Document</h3></div>
-            <div class="step"><i class="fas fa-sync-alt step-icon"></i><h3>Verification</h3></div>
-            <div class="step"><i class="fas fa-check-circle step-icon"></i><h3>Results</h3></div>
+            <div class="step active">
+                <div class="step-circle">
+                    <i class="fas fa-upload step-icon"></i>
+                </div>
+                <h3>Upload Document</h3>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-circle">
+                    <i class="fas fa-sync-alt step-icon"></i>
+                </div>
+                <h3>Verification</h3>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-circle">
+                    <i class="fas fa-check-circle step-icon"></i>
+                </div>
+                <h3>Results</h3>
+            </div>
         </div>   
         
         <div class="upload-area" id="uploadArea">
-            <i class="fas fa-cloud-upload-alt upload-icon"></i>
-            <h3>Drag and drop your document here</h3>
-            <p>or</p> 
-            <button id="browseBtn">Browse Files
-                <input type="file" id="fileInput" hidden accept=".pdf,.jpg,.jpeg,.png">
-            </button>
+            <div class="upload-content">
+                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                <h3>Drag and drop your document here</h3>
+                <p>or</p> 
+                <button id="browseBtn" class="browse-btn">
+                    <i class="fas fa-folder-open"></i>
+                    Browse Files
+                    <input type="file" id="fileInput" hidden accept=".pdf,.jpg,.jpeg,.png">
+                </button>
+                <p class="supported-formats">Supported formats: PDF, JPG, JPEG, PNG</p>
+            </div>
         </div>
 
         <div id="ownerNameContainer" class="owner-name-container" style="display: none;">
             <h3>Enter Owner Name for Verification</h3>
             <div class="input-group">
+                <i class="fas fa-user input-icon"></i>
                 <input type="text" id="ownerNameInput" placeholder="Enter owner name as in document" class="owner-input">
             </div>
         </div>
 
-        <button id="verifyBtn" style="display: none;">Verify</button>
+        <button id="verifyBtn" class="verify-btn" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            Verify Document
+        </button>
 
         <div id="progressContainer" class="progress-container" style="display: none;">
             <div class="progress-bar">
@@ -62,40 +106,91 @@
             <p id="progressStatus">Analyzing document...</p>
         </div>
 
-        <button id="resultBtn" style="display: none;">View Result</button>
-
+        <button id="resultBtn" class="result-btn" style="display: none;">
+            <i class="fas fa-file-alt"></i>
+            View Result
+        </button>
     </div>
 
     <!-- Features Section -->
     <section class="features">
         <div class="feature-card">
-            <i class="fas fa-bolt feature-icon"></i>
+            <div class="feature-icon-wrapper">
+                <i class="fas fa-bolt feature-icon"></i>
+            </div>
             <h3>Instant Verification</h3>
             <p>Get results in seconds with our AI-powered system</p>
             <div class="accuracy">
                 <span>Accuracy Rate</span>
+                <div class="accuracy-bar">
+                    <div class="accuracy-fill" style="width: 99.9%"></div>
+                </div>
                 <span class="accuracy-value">99.9%</span>
             </div>
         </div>
         <div class="feature-card">
-            <i class="fas fa-shield-alt feature-icon"></i>
+            <div class="feature-icon-wrapper">
+                <i class="fas fa-shield-alt feature-icon"></i>
+            </div>
             <h3>Fraud Detection</h3>
             <p>Advanced tampering and forgery detection</p>
             <div class="accuracy">
                 <span>Accuracy Rate</span>
+                <div class="accuracy-bar">
+                    <div class="accuracy-fill" style="width: 99.5%"></div>
+                </div>
                 <span class="accuracy-value">99.5%</span>
             </div>
         </div>
         <div class="feature-card">
-            <i class="fas fa-lock feature-icon"></i>
+            <div class="feature-icon-wrapper">
+                <i class="fas fa-lock feature-icon"></i>
+            </div>
             <h3>Secure Processing</h3>
             <p>End-to-end encrypted document handling</p>
             <div class="accuracy">
                 <span>Security Rate</span>
+                <div class="accuracy-bar">
+                    <div class="accuracy-fill" style="width: 100%"></div>
+                </div>
                 <span class="accuracy-value">100%</span>
             </div>
         </div>
     </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="verify.html">Verify</a></li>
+                    <li><a href="area.html">Area Calculator</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: info@verifymate.com</p>
+                <p>Phone: +1 (123) 456-7890</p>
+                <p>Address: 123 Main St, City, Country</p>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 VerifyMate. All rights reserved.</p>
+        </div>
+    </footer>
 
     <script src="verify.js"></script>
 </body>
