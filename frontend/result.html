@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CERSAI Verification Result - VerifyMate</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="verify.css">
+    <style>
+        .result-page {
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .result-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-header p {
+            color: var(--gray-600);
+        }
+
+        .result-summary {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .result-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-icon.success {
+            color: var(--success-color);
+        }
+
+        .result-icon.warning {
+            color: #ff9800;
+        }
+
+        .result-details {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .download-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .download-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .new-verify-btn {
+            background: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .new-verify-btn:hover {
+            background: var(--gray-50);
+        }
+
+        @media (max-width: 768px) {
+            .result-page {
+                padding: 1rem;
+            }
+
+            .result-summary,
+            .result-details {
+                padding: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="home.html" class="logo-link">
+                <img src="assets/logo.png" alt="VerifyMate Logo" class="logo-img">
+            </a>
+            <div class="menu-icon">
+                <i class="fas fa-bars"></i>
+            </div>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="verify.html">Verify</a></li>
+                <li><a href="area.html">Area</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Result Page Content -->
+    <div class="result-page">
+        <div class="result-header">
+            <h1>CERSAI Verification Result</h1>
+            <p>Your document verification is complete</p>
+        </div>
+
+        <div class="result-summary">
+            <div class="result-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Verification Complete</h2>
+            <p>Your document has been successfully verified against the CERSAI database.</p>
+        </div>
+
+        <div class="result-details">
+            <div class="detail-item">
+                <span class="detail-label">Owner Name</span>
+                <span class="detail-value" id="owner-name">-</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Document Type</span>
+                <span class="detail-value" id="document-type">-</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Mortgage Status</span>
+                <span class="detail-value" id="mortgage-status">-</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Verification Date</span>
+                <span class="detail-value" id="verification-date">-</span>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-btn download-btn" id="download-btn">
+                <i class="fas fa-download"></i>
+                Download Report
+            </button>
+            <button class="action-btn new-verify-btn" id="new-verify-btn">
+                <i class="fas fa-plus"></i>
+                New Verification
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get result from localStorage
+            const result = JSON.parse(localStorage.getItem('cersaiResult'));
+            
+            if (result) {
+                // Update result details
+                document.getElementById('owner-name').textContent = result.ownerName;
+                document.getElementById('document-type').textContent = result.documentType;
+                document.getElementById('mortgage-status').textContent = result.hasMortgage ? 'Has Mortgage' : 'No Mortgage';
+                document.getElementById('verification-date').textContent = result.verificationDate;
+
+                // Update result icon and message based on mortgage status
+                const resultIcon = document.querySelector('.result-icon i');
+                const resultTitle = document.querySelector('.result-summary h2');
+                const resultMessage = document.querySelector('.result-summary p');
+
+                if (result.hasMortgage) {
+                    resultIcon.className = 'fas fa-exclamation-circle';
+                    resultIcon.style.color = '#ff9800';
+                    resultTitle.textContent = 'Mortgage Detected';
+                    resultMessage.textContent = 'This property has an active mortgage registered with CERSAI.';
+                }
+            }
+
+            // Download Report Button
+            document.getElementById('download-btn').addEventListener('click', () => {
+                // Create a simple report
+                const report = `
+CERSAI Verification Report
+------------------------
+Owner Name: ${result.ownerName}
+Document Type: ${result.documentType}
+Mortgage Status: ${result.hasMortgage ? 'Has Mortgage' : 'No Mortgage'}
+Verification Date: ${result.verificationDate}
+                `;
+
+                // Create blob and download
+                const blob = new Blob([report], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'cersai-verification-report.txt';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            });
+
+            // New Verification Button
+            document.getElementById('new-verify-btn').addEventListener('click', () => {
+                window.location.href = 'verify.html';
+            });
+        });
+    </script>
+</body>
+</html> 

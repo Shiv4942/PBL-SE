@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Area Calculator - Document Verification System</title>
+    <title>Area Calculator & CERSAI Verification - Document Verification System</title>
     <link rel="stylesheet" href="area.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,19 +19,104 @@
             <div class="nav-links" id="navLinks">
                 <a class="nav-btn" href="home.html"><i class="fas fa-home"></i> Home</a>
                 <a class="nav-btn" href="verify.html"><i class="fas fa-check-circle"></i> Verify</a>
-                <a class="nav-btn" href="area.html"><i class="fas fa-calculator"></i> Area Calculator</a>
+                <a class="nav-btn active" href="area.html"><i class="fas fa-calculator"></i> Area Calculator</a>
                 <a class="nav-btn" href="about.html"><i class="fas fa-info-circle"></i> About Us</a>
                 <a class="nav-btn" href="contact.html"><i class="fas fa-envelope"></i> Contact Us</a>
             </div>
         </div>
     </nav>
 
-    <div class="calculator-container">
-        <div class="calculator-header">
-            <h1>Area Calculator</h1>
-            <p>Calculate the area of your property quickly and accurately. Enter the dimensions below to get started.</p>
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="calculator">Area Calculator</button>
+            <button class="tab-btn" data-tab="cersai">CERSAI Verification</button>
         </div>
-        <div id="root"></div>
+        
+        <div class="tab-content active" id="calculator-tab">
+            <div class="calculator-container">
+                <div class="calculator-header">
+                    <h1>Area Calculator</h1>
+                    <p>Calculate the area of your property quickly and accurately. Enter the dimensions below to get started.</p>
+                </div>
+                <div id="root"></div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="cersai-tab">
+            <div class="cersai-container">
+                <div class="cersai-header">
+                    <h1>CERSAI Verification</h1>
+                    <p>Upload your property documents to verify if there are any existing charges or mortgages registered with CERSAI.</p>
+                </div>
+                
+                <div class="cersai-steps">
+                    <div class="step active">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Upload Document</h3>
+                            <p>Upload your property document (7/12, sale deed, land registry)</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Extract Information</h3>
+                            <p>Our system will extract key information using OCR</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>CERSAI Check</h3>
+                            <p>Verify against CERSAI database for existing charges</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>View Results</h3>
+                            <p>Get detailed verification results</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cersai-upload-section">
+                    <div class="upload-area" id="cersaiUploadArea">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Drag & Drop Your Document</h3>
+                        <p>or</p>
+                        <button class="browse-btn" id="cersaiBrowseBtn">Browse Files</button>
+                        <input type="file" id="cersaiFileInput" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                        <p class="file-types">Supported formats: PDF, JPG, PNG</p>
+                    </div>
+                    
+                    <div class="owner-name-container" id="cersaiOwnerNameContainer" style="display: none;">
+                        <h3>Enter Property Owner Name</h3>
+                        <div class="input-group">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" id="cersaiOwnerNameInput" class="owner-input" placeholder="Enter owner name as it appears in the document">
+                        </div>
+                        <button class="verify-btn" id="cersaiVerifyBtn">Verify with CERSAI</button>
+                    </div>
+                    
+                    <div class="progress-container" id="cersaiProgressContainer" style="display: none;">
+                        <h3>Verifying Document</h3>
+                        <div class="progress-bar">
+                            <div class="progress" id="cersaiProgressBar"></div>
+                        </div>
+                        <p class="progress-status" id="cersaiProgressStatus">Starting verification...</p>
+                    </div>
+                    
+                    <div class="result-container" id="cersaiResultContainer" style="display: none;">
+                        <!-- Results will be displayed here -->
+                    </div>
+                    
+                    <button class="result-btn" id="cersaiResultBtn" style="display: none;">View CERSAI Results</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <footer class="footer">
@@ -71,10 +156,27 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script type="text/babel" src="AreaCalculator.js"></script>
+    <script src="cersai.js"></script>
 
     <script>
         document.getElementById("menuToggle").addEventListener("click", function() {
             document.getElementById("navLinks").classList.toggle("active");
+        });
+        
+        // Tab functionality
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons and contents
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked button and corresponding content
+                btn.classList.add('active');
+                document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
+            });
         });
     </script>
 </body>

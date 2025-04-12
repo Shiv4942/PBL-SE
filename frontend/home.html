@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Verification System</title>
+    <title>VerifyMate - Document Verification System</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="home.css">
 </head>
 <body>
     <nav class="nav">
         <div class="nav-container">
-            <a href="home.html" class="logo">
-                <img src="logo.png" alt="Logo" class="logo-img">
-            </a>
+            <img src="logo.png" alt="Logo" class="logo-img">
             
+            <!-- Menu Icon -->
             <i class="fas fa-bars menu-icon" id="menuToggle"></i>
     
             <div class="nav-links" id="navLinks">
-                <a class="nav-btn" href="home.html"><i class="fas fa-home"></i> Home</a>
+                <a class="nav-btn active" href="home.html"><i class="fas fa-home"></i> Home</a>
                 <a class="nav-btn" href="verify.html"><i class="fas fa-check-circle"></i> Verify</a>
                 <a class="nav-btn" href="area.html"><i class="fas fa-calculator"></i> Area Calculator</a>
                 <a class="nav-btn" href="about.html"><i class="fas fa-info-circle"></i> About Us</a>
@@ -27,21 +26,72 @@
         </div>
     </nav>
     
-    <main>
-        <section class="hero-section">
-            <div class="hero-content">
-                <h1>Secure Document Verification System</h1>
-                <p>Verify the authenticity of your documents with our advanced verification system. Fast, secure, and reliable.</p>
-                <div class="cta-buttons">
-                    <a href="verify.html" class="cta-btn primary"><i class="fas fa-check-circle"></i> Verify Document</a>
-                    <a href="area.html" class="cta-btn secondary"><i class="fas fa-calculator"></i> Area Calculator</a>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome to <span class="highlight">VerifyMate</span></h1>
+            <p>Your Trusted Partner in Document Verification</p>
+            <div class="cta-buttons">
+                <a href="verify.html" class="btn btn-primary">Verify Document</a>
+                <a href="area.html" class="btn btn-secondary">Calculate Area</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number">100K+</span>
+                    <span class="stat-label">Users Trust Us</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">1M+</span>
+                    <span class="stat-label">Documents Verified</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">99.9%</span>
+                    <span class="stat-label">Accuracy Rate</span>
                 </div>
             </div>
-            <div class="hero-image">
-                <img src="bghome.jpg" alt="Document Verification" class="hero-img">
+        </div>
+        <div class="hero-image">
+            <img src="bghome.jpg" alt="Document Verification">
+        </div>
+    </section>
+
+    <main>
+        <!-- Features Section -->
+        <section class="features">
+            <h2>Why Choose VerifyMate</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-shield-alt feature-icon"></i>
+                    </div>
+                    <h3>Secure & Reliable</h3>
+                    <p>End-to-end encrypted document processing with advanced security measures</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-bolt feature-icon"></i>
+                    </div>
+                    <h3>Fast Processing</h3>
+                    <p>Get verification results within seconds using our AI-powered system</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-check-circle feature-icon"></i>
+                    </div>
+                    <h3>High Accuracy</h3>
+                    <p>99.9% accuracy rate in detecting document authenticity</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-user-shield feature-icon"></i>
+                    </div>
+                    <h3>Privacy Protected</h3>
+                    <p>Your personal information is protected and never shared without consent</p>
+                </div>
             </div>
         </section>
 
+        <!-- Awareness Section -->
         <section class="awareness">
             <h2>Awareness on Document Originality</h2>
             <div class="awareness-content">
@@ -55,94 +105,210 @@
                 </div>
                 <div class="awareness-stats">
                     <div class="stat-card">
-                        <div class="stat-number">95%</div>
-                        <div class="stat-label">Accuracy Rate</div>
+                        <div class="stat-number">75%</div>
+                        <div class="stat-label">of fraud cases involve document forgery</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">10s</div>
-                        <div class="stat-label">Average Processing Time</div>
+                        <div class="stat-number">30%</div>
+                        <div class="stat-label">increase in document fraud since 2020</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">1M+</div>
-                        <div class="stat-label">Documents Verified</div>
+                        <div class="stat-number">$5B+</div>
+                        <div class="stat-label">lost annually due to document fraud</div>
                     </div>
                 </div>
             </div>
         </section>
         
+        <!-- Verification Steps -->
         <section class="verification-steps">
             <h2>How to Verify Your Document</h2>
             <div class="steps-container">
                 <div class="step">
-                    <div class="step-number">1</div>
-                    <h3>Visit Verify Page</h3>
-                    <p>Go to our <a href="verify.html">Verify</a> page to start</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
                     <h3>Upload Document</h3>
-                    <p>Upload your document (PDF, JPEG, PNG)</p>
+                    <p>Upload your document in PDF, JPEG, or PNG format</p>
                 </div>
                 <div class="step">
-                    <div class="step-number">3</div>
-                    <h3>Start Verification</h3>
-                    <p>Click "Verify" to begin the process</p>
+                    <div class="step-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3>Enter Owner Details</h3>
+                    <p>Provide the document owner's name for verification</p>
                 </div>
                 <div class="step">
-                    <div class="step-number">4</div>
+                    <div class="step-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>AI Analysis</h3>
+                    <p>Our AI system analyzes and cross-checks the document</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
                     <h3>Get Results</h3>
-                    <p>Receive detailed verification results</p>
+                    <p>Receive detailed verification results instantly</p>
                 </div>
+            </div>
+            <div class="steps-cta">
+                <a href="verify.html" class="btn btn-primary">Start Verification</a>
             </div>
         </section>
 
+        <!-- CERSAI Guide Section -->
+        <section class="cersai-guide">
+            <h2>How to Check Property on CERSAI</h2>
+            <p class="section-description">Follow these steps to verify if any loan or mortgage is registered against a property</p>
+            
+            <div class="guide-container">
+                <div class="guide-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Visit the Official CERSAI Website</h3>
+                        <p>Go to <a href="https://www.cersai.org.in" target="_blank">https://www.cersai.org.in</a></p>
+                    </div>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Click on "Public Search"</h3>
+                        <p>On the homepage, scroll down and look for "Public Search for Security Interest" or navigate from Services > Public Search</p>
+                        <p>Direct link: <a href="https://www.cersai.org.in/CERSAI/publicsearch.prg" target="_blank">https://www.cersai.org.in/CERSAI/publicsearch.prg</a></p>
+                    </div>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Choose the Type of Search</h3>
+                        <p>CERSAI allows different types of search:</p>
+                        <ul>
+                            <li><strong>Asset-Based Search</strong>
+                                <ul>
+                                    <li>Immovable Property (land, building)</li>
+                                    <li>Movable Property (vehicles, inventory)</li>
+                                </ul>
+                            </li>
+                            <li><strong>Borrower-Based Search</strong>
+                                <ul>
+                                    <li>Individual (PAN, name, etc.)</li>
+                                    <li>Entity (company name, CIN, etc.)</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Fill in the Details</h3>
+                        <p>Example for Immovable Property Search:</p>
+                        <ul>
+                            <li>State</li>
+                            <li>District</li>
+                            <li>Village/Town</li>
+                            <li>Survey No. / Plot No.</li>
+                            <li>Address of the Property (if available)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h3>Enter CAPTCHA and Submit</h3>
+                        <p>Verify CAPTCHA and click on Search</p>
+                    </div>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <h3>View the Results</h3>
+                        <p>If there's any security interest (loan/mortgage) registered against the property, you'll see:</p>
+                        <ul>
+                            <li>Name of Financial Institution</li>
+                            <li>Type of charge</li>
+                            <li>Date of charge registration</li>
+                            <li>Property details</li>
+                            <li>Charge amount</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="guide-note">
+                <p><strong>Note:</strong> The charge amount will be displayed in the search results, showing the total amount of the loan or mortgage registered against the property.</p>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
         <section class="testimonials">
             <h2>What Our Users Say</h2>
             <div class="testimonial-container">
                 <div class="testimonial">
                     <div class="testimonial-content">
-                        <p>"This system saved me from a potential fraud. The verification was quick and accurate."</p>
+                        <p>"VerifyMate saved me from a potential fraud. The verification was quick and accurate!"</p>
                     </div>
                     <div class="testimonial-author">
-                        <div class="author-name">John D.</div>
-                        <div class="author-title">Business Owner</div>
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User">
+                        <div class="author-info">
+                            <h4>Rajesh Kumar</h4>
+                            <p>Property Buyer</p>
+                        </div>
                     </div>
                 </div>
                 <div class="testimonial">
                     <div class="testimonial-content">
-                        <p>"As a legal professional, I rely on this tool daily. It's fast, reliable, and user-friendly."</p>
+                        <p>"As a real estate agent, I use VerifyMate for all my property verifications. It's reliable and efficient."</p>
                     </div>
                     <div class="testimonial-author">
-                        <div class="author-name">Sarah M.</div>
-                        <div class="author-title">Attorney</div>
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                        <div class="author-info">
+                            <h4>Priya Sharma</h4>
+                            <p>Real Estate Agent</p>
+                        </div>
                     </div>
                 </div>
                 <div class="testimonial">
                     <div class="testimonial-content">
-                        <p>"The area calculator feature is incredibly useful for my real estate work. Highly recommended!"</p>
+                        <p>"The area calculator feature is incredibly accurate. It's become an essential tool for my business."</p>
                     </div>
                     <div class="testimonial-author">
-                        <div class="author-name">Michael R.</div>
-                        <div class="author-title">Real Estate Agent</div>
+                        <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="User">
+                        <div class="author-info">
+                            <h4>Amit Patel</h4>
+                            <p>Property Developer</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
+    <!-- Footer Section -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
                 <h3>Quick Links</h3>
-                <a href="verify.html">Verify Document</a>
-                <a href="area.html">Area Calculator</a>
-                <a href="about.html">About Us</a>
-                <a href="contact.html">Contact</a>
+                <ul>
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="verify.html">Verify</a></li>
+                    <li><a href="area.html">Area Calculator</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
             </div>
             <div class="footer-section">
-                <h3>Contact Info</h3>
-                <p><i class="fas fa-envelope"></i> support@docverify.com</p>
-                <p><i class="fas fa-phone"></i> +1 234 567 890</p>
+                <h3>Contact Us</h3>
+                <p><i class="fas fa-envelope"></i> info@verifymate.com</p>
+                <p><i class="fas fa-phone"></i> +1 (123) 456-7890</p>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Main St, City, Country</p>
             </div>
             <div class="footer-section">
                 <h3>Follow Us</h3>
@@ -150,27 +316,18 @@
                     <a href="#"><i class="fab fa-facebook"></i></a>
                     <a href="#"><i class="fab fa-twitter"></i></a>
                     <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 Document Verification System. All rights reserved.</p>
+            <p>&copy; 2023 VerifyMate. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
-        document.getElementById("menuToggle").addEventListener("click", function() {
+        document.getElementById("menuToggle").addEventListener("click", function () {
             document.getElementById("navLinks").classList.toggle("active");
-        });
-
-        // Add smooth scroll behavior
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
         });
     </script>
 </body>
