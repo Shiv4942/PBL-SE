@@ -19,6 +19,12 @@
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
+    --success: #28a745;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --gray-light: #f8f9fa;
+    --gray: #6c757d;
+    --white: #ffffff;
 }
 
 body {
@@ -94,6 +100,10 @@ body {
 
 .nav-btn:hover::before {
     transform: translateX(0);
+}
+
+.nav-btn:hover {
+    transform: translateY(-2px);
 }
 
 .nav-btn i {
@@ -1125,4 +1135,87 @@ main {
     .step-content h3 {
         font-size: 1.2rem;
     }
+}
+
+/* Mobile Menu Animation */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nav-links.active {
+    animation: slideDown 0.3s ease forwards;
+}
+
+/* Content Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero, .hero-content, .hero-stats, .features, .feature-card, .awareness, .steps, .cersai-guide {
+    animation: fadeIn 0.8s ease forwards;
+}
+
+.hero-stats .stat {
+    animation: fadeIn 0.8s ease forwards;
+    opacity: 0;
+}
+
+.hero-stats .stat:nth-child(1) { animation-delay: 0.2s; }
+.hero-stats .stat:nth-child(2) { animation-delay: 0.4s; }
+.hero-stats .stat:nth-child(3) { animation-delay: 0.6s; }
+
+.feature-card {
+    animation: fadeIn 0.8s ease forwards;
+    opacity: 0;
+}
+
+.feature-card:nth-child(1) { animation-delay: 0.2s; }
+.feature-card:nth-child(2) { animation-delay: 0.4s; }
+.feature-card:nth-child(3) { animation-delay: 0.6s; }
+.feature-card:nth-child(4) { animation-delay: 0.8s; }
+
+.step {
+    animation: fadeIn 0.8s ease forwards;
+    opacity: 0;
+}
+
+.step:nth-child(1) { animation-delay: 0.2s; }
+.step:nth-child(2) { animation-delay: 0.4s; }
+.step:nth-child(3) { animation-delay: 0.6s; }
+
+/* Hover Animations */
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.cta-btn {
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.cta-btn:hover {
+    transform: translateY(-2px);
+    background-color: var(--primary-dark);
+}
+
+.cta-btn i {
+    transition: transform 0.3s ease;
+}
+
+.cta-btn:hover i {
+    transform: translateX(5px);
 }
