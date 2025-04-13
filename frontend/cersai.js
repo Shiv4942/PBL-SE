@@ -18,8 +18,14 @@ let uploadProgress = 0;
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    initializeUpload();
-    initializeTabs();
+    // Only initialize if we're on the correct page (check if upload area exists)
+    if (uploadArea) {
+        initializeUpload();
+    }
+    // Only initialize tabs if they exist
+    if (document.querySelector('.tab-btn')) {
+        initializeTabs();
+    }
 });
 
 // Initialize Upload Area

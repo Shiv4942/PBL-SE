@@ -29,36 +29,63 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h1>Welcome to <span class="highlight">VerifyMate</span></h1>
-            <p>Your Trusted Partner in Document Verification</p>
-            <div class="cta-buttons">
-                <a href="verify.html" class="btn btn-primary">Verify Document</a>
-                <a href="area.html" class="btn btn-secondary">Calculate Area</a>
-            </div>
-            <div class="hero-stats">
-                <div class="stat">
-                    <span class="stat-number">100K+</span>
-                    <span class="stat-label">Users Trust Us</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-number">1M+</span>
-                    <span class="stat-label">Documents Verified</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-number">99.9%</span>
-                    <span class="stat-label">Accuracy Rate</span>
+            <div class="hero-text">
+                <h1>Welcome to <span class="highlight">VerifyMate</span></h1>
+                <p class="hero-description">Your Trusted Partner in Document Verification</p>
+                <div class="cta-buttons">
+                    <a href="verify.html" class="btn btn-primary">
+                        <i class="fas fa-check-circle"></i>
+                        Verify Document
+                    </a>
+                    <a href="area.html" class="btn btn-secondary">
+                        <i class="fas fa-calculator"></i>
+                        Calculate Area
+                    </a>
                 </div>
             </div>
+            <!-- <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number">100K+</span>
+                        <span class="stat-label">Users Trust Us</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number">1M+</span>
+                        <span class="stat-label">Documents Verified</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number">99.9%</span>
+                        <span class="stat-label">Accuracy Rate</span>
+                    </div>
+                </div>
+            </div> -->
         </div>
         <div class="hero-image">
             <img src="bghome.jpg" alt="Document Verification">
+            <div class="hero-shape"></div>
         </div>
     </section>
 
     <main>
         <!-- Features Section -->
         <section class="features">
-            <h2>Why Choose VerifyMate</h2>
+            <div class="section-header">
+                <h2>Why Choose VerifyMate</h2>
+                <p>Experience the future of document verification with our cutting-edge features</p>
+            </div>
             <div class="feature-grid">
                 <div class="feature-card">
                     <div class="feature-icon-wrapper">
@@ -66,6 +93,7 @@
                     </div>
                     <h3>Secure & Reliable</h3>
                     <p>End-to-end encrypted document processing with advanced security measures</p>
+                    <a href="verify.html" class="feature-link">Learn More <i class="fas fa-arrow-right"></i></a>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon-wrapper">
@@ -73,6 +101,7 @@
                     </div>
                     <h3>Fast Processing</h3>
                     <p>Get verification results within seconds using our AI-powered system</p>
+                    <a href="verify.html" class="feature-link">Learn More <i class="fas fa-arrow-right"></i></a>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon-wrapper">
@@ -80,6 +109,7 @@
                     </div>
                     <h3>High Accuracy</h3>
                     <p>99.9% accuracy rate in detecting document authenticity</p>
+                    <a href="verify.html" class="feature-link">Learn More <i class="fas fa-arrow-right"></i></a>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon-wrapper">
@@ -87,6 +117,7 @@
                     </div>
                     <h3>Privacy Protected</h3>
                     <p>Your personal information is protected and never shared without consent</p>
+                    <a href="verify.html" class="feature-link">Learn More <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
         </section>
@@ -326,8 +357,16 @@
     </footer>
 
     <script>
-        document.getElementById("menuToggle").addEventListener("click", function () {
-            document.getElementById("navLinks").classList.toggle("active");
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menuToggle');
+            const navLinks = document.getElementById('navLinks');
+            
+            if (menuToggle && navLinks) {
+                menuToggle.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+                });
+            }
         });
     </script>
 </body>

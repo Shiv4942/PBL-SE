@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CERSAI Verification Result - VerifyMate</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="verify.css">
     <style>
         .result-page {
             padding: 2rem;
             max-width: 800px;
             margin: 0 auto;
+            margin-top: 120px;
         }
 
         .result-header {
@@ -19,19 +21,19 @@
         }
 
         .result-header h1 {
-            color: var(--primary-color);
+            color: var(--primary);
             margin-bottom: 0.5rem;
         }
 
         .result-header p {
-            color: var(--gray-600);
+            color: var(--gray);
         }
 
         .result-summary {
             background: white;
             border-radius: 10px;
             padding: 2rem;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow);
             margin-bottom: 2rem;
             text-align: center;
         }
@@ -42,7 +44,7 @@
         }
 
         .result-icon.success {
-            color: var(--success-color);
+            color: var(--success);
         }
 
         .result-icon.warning {
@@ -137,22 +139,20 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="nav">
         <div class="nav-container">
-            <a href="home.html" class="logo-link">
-                <img src="assets/logo.png" alt="VerifyMate Logo" class="logo-img">
-            </a>
-            <div class="menu-icon">
-                <i class="fas fa-bars"></i>
+            <img src="logo.png" alt="Logo" class="logo-img">
+            
+            <!-- Menu Icon -->
+            <i class="fas fa-bars menu-icon" id="menuToggle"></i>
+    
+            <div class="nav-links" id="navLinks">
+                <a class="nav-btn" href="home.html"><i class="fas fa-home"></i> Home</a>
+                <a class="nav-btn active" href="verify.html"><i class="fas fa-check-circle"></i> Verify</a>
+                <a class="nav-btn" href="area.html"><i class="fas fa-calculator"></i> Area Calculator</a>
+                <a class="nav-btn" href="about.html"><i class="fas fa-info-circle"></i> About Us</a>
+                <a class="nav-btn" href="contact.html"><i class="fas fa-envelope"></i> Contact Us</a>
             </div>
-            <ul class="nav-links">
-                <li><a href="home.html">Home</a></li>
-                <li><a href="verify.html">Verify</a></li>
-                <li><a href="area.html">Area</a></li>
-                <li><a href="about.html">About</a></li>
-                <li><a href="contact.html">Contact</a></li>
-            </ul>
         </div>
     </nav>
 
@@ -255,6 +255,18 @@ Verification Date: ${result.verificationDate}
             document.getElementById('new-verify-btn').addEventListener('click', () => {
                 window.location.href = 'verify.html';
             });
+        });
+
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menuToggle');
+            const navLinks = document.getElementById('navLinks');
+            
+            if (menuToggle && navLinks) {
+                menuToggle.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+                });
+            }
         });
     </script>
 </body>

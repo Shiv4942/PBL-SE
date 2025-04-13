@@ -28,21 +28,22 @@ body {
 /* Navigation Styles */
 .nav {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    padding: 0.5rem;
     box-shadow: var(--shadow);
     position: fixed;
-    width: 100%;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
+    padding: 0.8rem 0;
 }
 
 .nav-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0 2rem;
 }
 
 .logo-img {
@@ -59,9 +60,10 @@ body {
 
 .nav-links {
     display: flex;
-    gap: 2rem;
+    gap: 1.5rem;
     align-items: center;
     margin-left: auto;
+    flex-direction: row;
 }
 
 .nav-btn {
@@ -75,10 +77,28 @@ body {
     transition: all 0.3s ease;
     font-size: 1.2rem;
     font-weight: 500;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+.nav-btn:hover::before {
+    transform: translateX(0);
 }
 
 .nav-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
 }
 
@@ -89,6 +109,11 @@ body {
 
 .nav-btn i {
     font-size: 1.8rem;
+    transition: transform 0.3s ease;
+}
+
+.nav-btn:hover i {
+    transform: scale(1.1);
 }
 
 .nav-btn span {
@@ -100,10 +125,12 @@ body {
 
 /* Menu Icon and Responsive Styles */
 .menu-icon {
-    display: none !important;
-    color: var(--white);
-    font-size: 1.5rem;
-    cursor: pointer;
+    display: none;
+    
+}
+
+.menu-icon:hover {
+    transform: scale(1.1);
 }
 
 @media screen and (max-width: 768px) {
@@ -153,20 +180,18 @@ body {
 
 @media screen and (max-width: 768px) {
     .nav {
-        padding: 0.3rem;
+        padding: 0.6rem 0;
     }
 
     .nav-container {
-        padding: 0.3rem 0.8rem;
+        padding: 0 1.5rem;
+        justify-content: space-between;
     }
 
     .logo-img {
-        width: 200px;
-        height: 50px;
-    }
-
-    .menu-icon {
-        display: block;
+        width: 300px;
+        height: 75px;
+        margin-left: 0;
     }
 
     .nav-links {
@@ -175,12 +200,22 @@ body {
         top: 100%;
         left: 0;
         right: 0;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        padding: 1rem;
         flex-direction: column;
-        background: var(--primary);
-        padding: 0.5rem;
-        gap: 0.3rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow);
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .nav-links.active {
@@ -188,8 +223,18 @@ body {
     }
 
     .nav-btn {
+        padding: 1.2rem 1.8rem;
+        font-size: 1.3rem;
         width: 100%;
         justify-content: center;
+    }
+
+    .nav-btn i {
+        font-size: 2rem;
+    }
+
+    .menu-icon {
+        display: block;
     }
 
     .about-header {
@@ -222,11 +267,37 @@ body {
         width: 100%;
     }
 }
-.menu-icon {
-    display: none;
-    font-size: 1.5rem;
-    color: var(--white);
-    cursor: pointer;
+
+@media (max-width: 480px) {
+    .logo-img {
+        width: 250px;
+        height: 60px;
+    }
+
+    .nav-btn {
+        padding: 1.1rem 1.5rem;
+        font-size: 1.2rem;
+    }
+
+    .nav-btn i {
+        font-size: 1.8rem;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .mission-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .team-container {
+        grid-template-columns: 1fr;
+    }
+
+    .values-container {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Hero Section */
@@ -531,61 +602,4 @@ body {
 
 .team-card .social-links a:hover {
     color: var(--primary-color);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .menu-icon {
-        display: block; /* Visible for mobile devices */
-        font-size: 1.5rem;
-        color: var(--white);
-        cursor: pointer;
-    }
-
-    .nav-links {
-        display: none; /* Hide navigation links by default */
-        flex-direction: column;
-        background: var(--primary);
-        position: absolute;
-        top: 80px;
-        left: 0;
-        width: 100%;
-        padding: 1rem;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-    }
-
-    .nav-links.active {
-        display: flex; /* Show navigation links when menu is toggled */
-    }
-
-    .mission-container {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-
-    .hero h1 {
-        font-size: 2.5rem;
-    }
-
-    .section-header h2 {
-        font-size: 2rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .hero h1 {
-        font-size: 2rem;
-    }
-
-    .mission-stats {
-        grid-template-columns: 1fr;
-    }
-
-    .team-container {
-        grid-template-columns: 1fr;
-    }
-
-    .values-container {
-        grid-template-columns: 1fr;
-    }
 }
