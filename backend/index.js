@@ -1,5 +1,12 @@
 const express = require("express");
-const cors = require("cors");
+const cors = require("cors");//cross origin resource sharing used to allow or reject requests from other domains.
+//  if frontend and backend are on different domains, we need to use this.
+//Eg - const corsOptions = {
+//     origin: "http://example.com", // Allow only this domain
+//     methods: ["GET", "POST"],    // Allow only specific HTTP methods
+//     allowedHeaders: ["Content-Type", "Authorization"], // Allow specific headers
+// };
+//app.use(cors(corsOptions));
 const path = require("path");
 const db = require("./connection/database");
 const userroutes = require("./routes/userroutes");
@@ -10,7 +17,7 @@ const cleanup = require("./connection/cleanup");
 // Serve static files from the 'public' directory
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({extended : true}));
+app.use(express.urlencoded({extended : true}));//middleware to parse urlencoded data
 app.use(express.static(path.join(__dirname, "../frontend")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

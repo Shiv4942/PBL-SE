@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('crypto');//used to create hash of the document
 const fs = require('fs');
 const levenshtein = require('fast-levenshtein');   // For fuzzy matching
 const pool = require('../connection/database');

@@ -1,9 +1,9 @@
 const fs = require("fs");
-const pdf = require("pdf-parse");
+const pdf = require("pdf-parse");// Use pdf-parse for PDF text extraction
 const Tesseract = require("tesseract.js");
 const path = require("path");
-const { convert } = require("pdf-poppler");
-const sharp = require("sharp");
+const { convert } = require("pdf-poppler");// Use pdf-poppler for PDF to image conversion
+const sharp = require("sharp");// Use sharp for image preprocessing
 
 // Configure Tesseract parameters optimized for form documents
 const tesseractConfig = {

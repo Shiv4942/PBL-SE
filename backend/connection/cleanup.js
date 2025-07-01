@@ -1,7 +1,13 @@
 const fs = require("fs");
 const path = require("path");
-const cron = require("node-cron");
-
+const cron = require("node-cron");// allows us to schedule tasks to run at particular time interval using cron syntax
+// * * * * *
+// | | | | |
+// | | | | +---- Day of the week (0 - 7) (Sunday is both 0 and 7)
+// | | | +------ Month (1 - 12)
+// | | +-------- Day of the month (1 - 31)
+// | +---------- Hour (0 - 23)
+// +------------ Minute (0 - 59)
 const uploadDir = path.join(__dirname, "../uploads");
 
 // Function to delete old files
